@@ -64,14 +64,29 @@ function meditationForGoals(goals: string[]) {
   return MEDITATIONS.find(m => m.id === 'letting-go')!
 }
 
+/** A sentence-friendly clause for a goal label (chips read as imperatives). */
+function goalClause(goalLabel: string): string {
+  switch (goalLabel) {
+    case 'Fall asleep faster': return 'falling asleep faster'
+    case 'Stay asleep through the night': return 'staying asleep through the night'
+    case 'Wake up less groggy': return 'clearer mornings'
+    case 'Quiet a racing mind': return 'a quieter mind'
+    case 'Build a consistent rhythm': return 'a steadier rhythm'
+    default: return 'better sleep'
+  }
+}
+
 export interface TonightPlan {
   bedtimeLabel: string
   wakeLabel: string
+  /** Wind-down begins 45 min before target bedtime */
+  windDownLabel: string
   adjusted: boolean
   soundscape: ReturnType<typeof soundscapeForPrefs>
   meditation: ReturnType<typeof meditationForGoals>
   primaryGoal: string
-  windDownMinutes: number
+  /** Sentence-friendly form of the primary goal */
+  goalClause: string
 }
 
 interface PlanState {
@@ -117,16 +132,20 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const plan: TonightPlan = useMemo(() => {
     const totalBed = prefs.bedtimeHour * 60 + prefs.bedtimeMinute - prefs.bedtimeAdjustMin
-    const bh = Math.floor(((totalBed % 1440) + 1440) % 1440 / 60)
-    const bm = ((totalBed % 60) + 60) % 60
+    const norm = (mins: number) => {
+      const m = ((mins % 1440) + 1440) % 1440
+      return fmtTime(Math.floor(m / 60), m % 60)
+    }
+    const primaryGoal = prefs.goals[0] ?? 'Sleep better'
     return {
-      bedtimeLabel: fmtTime(bh, bm),
+      bedtimeLabel: norm(totalBed),
       wakeLabel: fmtTime(prefs.wakeHour, prefs.wakeMinute),
+      windDownLabel: norm(totalBed - 45),
       adjusted: prefs.bedtimeAdjustMin > 0,
       soundscape: soundscapeForPrefs(prefs.soundPrefs),
       meditation: meditationForGoals(prefs.goals),
-      primaryGoal: prefs.goals[0] ?? 'Sleep better',
-      windDownMinutes: 38,
+      primaryGoal,
+      goalClause: goalClause(primaryGoal),
     }
   }, [prefs])
 

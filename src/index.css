@@ -4,6 +4,8 @@
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
   --font-serif: "Fraunces", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  /* Classical engraved serif — the SOMNIA wordmark / logotype only */
+  --font-wordmark: "Cinzel", "Fraunces", Georgia, serif;
 
   /* ─── Pure Indigo — locked palette ─── */
   --color-bg: #0E0824;

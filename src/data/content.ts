@@ -133,6 +133,8 @@ export interface DreamEntry {
   title: string
   body: string
   tags: string[]
+  /** Ties the dream to the night it came from — the loop, not a notes app. */
+  linkedSession?: { score: number; quality: string; soundscape: string }
 }
 
 export const MOODS: Record<DreamEntry['mood'], { label: string; glyph: string }> = {
@@ -151,6 +153,7 @@ export const JOURNAL: DreamEntry[] = [
     title: 'The house with the extra room',
     body: 'There was a door in the hallway I had never noticed. Behind it, a room that was clearly always there — a desk, a window facing a sea that does not exist near where I grew up. I felt no surprise, only a kind of recognition.',
     tags: ['recurring', 'houses', 'calm'],
+    linkedSession: { score: 94, quality: 'Restful', soundscape: 'Light Rainstorm' },
   },
   {
     id: 'j2',
@@ -167,6 +170,7 @@ export const JOURNAL: DreamEntry[] = [
     title: 'Floating in the cedar dark',
     body: 'Put on Cedar Forest before bed. Dreamt I was lying on the forest floor, not cold, looking up through the trees at a sky with too many stars. Woke up before the alarm, rested.',
     tags: ['soundscape', 'forest'],
+    linkedSession: { score: 88, quality: 'Sound', soundscape: 'Cedar Forest' },
   },
 ]
 

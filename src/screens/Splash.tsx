@@ -27,12 +27,13 @@ export default function Splash() {
         </div>
         <div className="rise" style={{ textAlign: 'center', animationDelay: '300ms' }}>
           <div style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 30,
-            letterSpacing: '0.32em',
+            fontFamily: 'var(--font-wordmark)',
+            fontWeight: 500,
+            fontSize: 32,
+            letterSpacing: '0.28em',
             textTransform: 'uppercase',
             color: 'var(--color-text)',
-            paddingLeft: '0.32em',
+            paddingLeft: '0.28em',
           }}>
             Somnia
           </div>

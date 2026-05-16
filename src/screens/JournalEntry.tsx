@@ -47,6 +47,30 @@ export default function JournalEntry() {
         {e.body}
       </p>
 
+      {e.linkedSession && (
+        <div style={{
+          marginTop: 28, padding: 18, borderRadius: 16,
+          background: 'var(--color-surface)', border: '1px solid var(--color-hair)',
+          display: 'flex', alignItems: 'center', gap: 18,
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-serif)', fontSize: 40, lineHeight: 1,
+            color: 'var(--color-accent-bright)', fontVariantNumeric: 'tabular-nums',
+            letterSpacing: '-0.03em',
+          }}>
+            {e.linkedSession.score}
+          </div>
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 5 }}>
+              The night this came from
+            </div>
+            <div style={{ fontSize: 14, color: 'var(--color-text)' }}>
+              {e.linkedSession.quality} sleep · fell asleep to {e.linkedSession.soundscape}
+            </div>
+          </div>
+        </div>
+      )}
+
       {e.tags.length > 0 && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 30 }}>
           {e.tags.map(t => (

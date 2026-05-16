@@ -2,13 +2,15 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Screen, TopBar, Eyebrow, PrimaryButton } from '../components/ui'
 import { useJournal } from '../context/JournalProvider'
-import { MOODS, type DreamEntry } from '../data/content'
+import { usePlan } from '../context/PlanProvider'
+import { MOODS, LAST_NIGHT, type DreamEntry } from '../data/content'
 
 const MOOD_KEYS = Object.keys(MOODS) as DreamEntry['mood'][]
 
 export default function JournalCompose() {
   const navigate = useNavigate()
   const { add } = useJournal()
+  const { plan } = usePlan()
   const [mood, setMood] = useState<DreamEntry['mood']>('calm')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -20,6 +22,12 @@ export default function JournalCompose() {
       title: title.trim() || 'Untitled dream',
       body: body.trim() || '—',
       tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+      // Tie this dream to last night — the loop, not a standalone note.
+      linkedSession: {
+        score: LAST_NIGHT.score,
+        quality: LAST_NIGHT.quality,
+        soundscape: plan.soundscape.name,
+      },
     })
     navigate('/journal')
   }
@@ -33,9 +41,21 @@ export default function JournalCompose() {
       } />
 
       <Eyebrow>New entry · {new Date().toLocaleDateString('en', { weekday: 'long' })} morning</Eyebrow>
-      <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--color-text)', marginTop: 12, marginBottom: 28 }}>
+      <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--color-text)', marginTop: 12, marginBottom: 22 }}>
         Before it fades — what do you remember?
       </p>
+
+      {/* The link, made visible while writing */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '11px 14px', borderRadius: 12, marginBottom: 24,
+        background: 'var(--color-surface)', border: '1px solid var(--color-hair)',
+      }}>
+        <span style={{ width: 7, height: 7, borderRadius: 4, background: 'var(--color-accent)' }} />
+        <span style={{ fontSize: 12.5, color: 'var(--color-text-muted)' }}>
+          Tied to last night — <span style={{ color: 'var(--color-text)' }}>{LAST_NIGHT.score} {LAST_NIGHT.quality}</span>, {plan.soundscape.name}
+        </span>
+      </div>
 
       {/* Mood */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 26 }}>

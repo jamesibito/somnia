@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { Screen, Eyebrow, Display, BigNumber, Hairline, TopBar } from '../components/ui'
 import TabBar from '../components/TabBar'
-import { SESSIONS, fmtDuration, USER } from '../data/content'
+import { SESSIONS, fmtDuration } from '../data/content'
 import { usePlan } from '../context/PlanProvider'
-import { deriveInsight } from '../utils/insight'
+import { deriveInsight, deriveStreak } from '../utils/insight'
 
 export default function Sleep() {
   const navigate = useNavigate()
   const { prefs, applyBedtimeAdjustment } = usePlan()
   const insight = deriveInsight(SESSIONS, prefs)
+  const streak = deriveStreak(SESSIONS, prefs)
   const [sel, setSel] = useState(SESSIONS.length - 1)
   const s = SESSIONS[sel]
   const last7 = SESSIONS.slice(-7)
@@ -68,13 +69,21 @@ export default function Sleep() {
 
         <Hairline mt={30} mb={28} />
 
-        {/* Weekly insights */}
+        {/* Weekly stats — all derived from the same 7 nights as the insight */}
         <Eyebrow style={{ display: 'block', marginBottom: 16 }}>This week</Eyebrow>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <Stat label="Avg score" value={String(USER.weekly.avgScore)} />
-          <Stat label="Sleep debt" value={USER.weekly.debt} warn />
+          <Stat label="Avg score" value={String(Math.round(last7.reduce((a, x) => a + x.score, 0) / 7))} />
+          <Stat
+            label="Sleep debt"
+            value={(() => {
+              const avg = last7.reduce((a, x) => a + x.durationMin, 0) / 7
+              const d = Math.round(prefs.nightlyGoalHours * 60 - avg)
+              return d > 0 ? `−${fmtDuration(d)}` : `+${fmtDuration(-d)}`
+            })()}
+            warn={prefs.nightlyGoalHours * 60 - last7.reduce((a, x) => a + x.durationMin, 0) / 7 > 0}
+          />
           <Stat label="Avg duration" value={fmtDuration(Math.round(last7.reduce((a, x) => a + x.durationMin, 0) / 7))} />
-          <Stat label="Consistency" value={`${USER.streak} nights`} />
+          <Stat label="Consistency" value={streak.broken ? 'Broken' : `${streak.count} nights`} />
         </div>
 
         <div style={{

@@ -26,14 +26,14 @@ export default function Tonight() {
           Good evening, {USER.firstName}
         </p>
         <Display size={36} style={{ marginBottom: 14 }}>
-          Wind‑down begins in{' '}
+          Wind‑down at{' '}
           <span style={{ color: 'var(--color-accent-bright)', borderBottom: '2px solid rgba(201,187,245,0.4)', paddingBottom: 2 }}>
-            {plan.windDownMinutes}m
+            {plan.windDownLabel}
           </span>.
         </Display>
         {/* The loop, made visible: why tonight looks the way it does */}
         <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 34 }}>
-          Shaped for <span style={{ color: 'var(--color-text)' }}>{plan.primaryGoal.toLowerCase()}</span>
+          Shaped for <span style={{ color: 'var(--color-text)' }}>{plan.goalClause}</span>
           {plan.adjusted && (
             <> · bedtime moved <span style={{ color: 'var(--color-accent)' }}>{prefs.bedtimeAdjustMin}m earlier</span> after last night</>
           )}.

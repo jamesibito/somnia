@@ -91,7 +91,7 @@ export default function NightMode() {
               Good night, Mira.
             </h1>
             <p style={{ fontSize: 14, color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 44, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto' }}>
-              Tonight, for <span style={{ color: 'var(--color-text)' }}>{plan.primaryGoal.toLowerCase()}</span>.
+              Tonight, for <span style={{ color: 'var(--color-text)' }}>{plan.goalClause}</span>.
               One choice, then put the phone down.
             </p>
 

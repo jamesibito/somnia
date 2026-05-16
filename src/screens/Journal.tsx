@@ -74,6 +74,22 @@ export default function Journal() {
                 }}>
                   {e.body}
                 </p>
+                {e.linkedSession && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8, marginTop: 12,
+                    paddingTop: 12, borderTop: '1px solid var(--color-hair)',
+                  }}>
+                    <span style={{
+                      fontFamily: 'var(--font-serif)', fontSize: 15, color: 'var(--color-accent-bright)',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}>
+                      {e.linkedSession.score}
+                    </span>
+                    <span style={{ fontSize: 11.5, color: 'var(--color-text-faint)' }}>
+                      {e.linkedSession.quality} night · {e.linkedSession.soundscape}
+                    </span>
+                  </div>
+                )}
               </button>
             ))}
           </div>
