@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import PhoneFrame from './components/PhoneFrame'
 import { AudioProvider } from './context/AudioProvider'
 import { JournalProvider } from './context/JournalProvider'
+import { PlanProvider } from './context/PlanProvider'
 
 import Splash from './screens/Splash'
 import Onboarding from './screens/Onboarding'
@@ -17,6 +18,8 @@ import JournalEntry from './screens/JournalEntry'
 import JournalCompose from './screens/JournalCompose'
 import Alarm from './screens/Alarm'
 import Profile from './screens/Profile'
+import NightMode from './screens/NightMode'
+import GoodMorning from './screens/GoodMorning'
 
 function ScrollReset() {
   const { pathname } = useLocation()
@@ -30,6 +33,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AudioProvider>
+        <PlanProvider>
         <JournalProvider>
           <PhoneFrame>
             <ScrollReset />
@@ -37,6 +41,8 @@ export default function App() {
               <Route path="/" element={<Splash />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/tonight" element={<Tonight />} />
+              <Route path="/night" element={<NightMode />} />
+              <Route path="/morning" element={<GoodMorning />} />
               <Route path="/soundscape" element={<SoundscapeLibrary />} />
               <Route path="/soundscape/:id" element={<SoundscapePlayer />} />
               <Route path="/sleep" element={<Sleep />} />
@@ -50,6 +56,7 @@ export default function App() {
             </Routes>
           </PhoneFrame>
         </JournalProvider>
+        </PlanProvider>
       </AudioProvider>
     </BrowserRouter>
   )

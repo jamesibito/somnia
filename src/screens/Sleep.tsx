@@ -1,9 +1,16 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { Screen, Eyebrow, Display, BigNumber, Hairline, TopBar } from '../components/ui'
 import TabBar from '../components/TabBar'
 import { SESSIONS, fmtDuration, USER } from '../data/content'
+import { usePlan } from '../context/PlanProvider'
+import { deriveInsight } from '../utils/insight'
 
 export default function Sleep() {
+  const navigate = useNavigate()
+  const { prefs, applyBedtimeAdjustment } = usePlan()
+  const insight = deriveInsight(SESSIONS, prefs)
   const [sel, setSel] = useState(SESSIONS.length - 1)
   const s = SESSIONS[sel]
   const last7 = SESSIONS.slice(-7)
@@ -74,12 +81,23 @@ export default function Sleep() {
           marginTop: 22, padding: 18, borderRadius: 16,
           background: 'var(--color-surface)', border: '1px solid var(--color-hair)',
         }}>
-          <Display size={17} style={{ marginBottom: 8 }}>The pattern this week</Display>
-          <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--color-text-muted)' }}>
-            Your deep sleep is strongest on nights you started a soundscape before midnight.
-            The two low nights both followed a bedtime after 12:30. Somnia suggests holding
-            the {USER.bedtimeGoal} target — you're <span style={{ color: 'var(--color-text)' }}>{USER.weekly.debt}</span> against your goal.
+          <Display size={18} style={{ marginBottom: 10 }}>{insight.headline}</Display>
+          <p style={{ fontSize: 13.5, lineHeight: 1.65, color: 'var(--color-text-muted)', marginBottom: 18 }}>
+            {insight.detail}
           </p>
+          <button
+            className="pressable focusable"
+            onClick={() => { applyBedtimeAdjustment(insight.bedtimeAdjustMin); navigate('/tonight') }}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '14px 16px', borderRadius: 12,
+              background: 'rgba(181,168,232,0.1)', border: '1px solid var(--color-accent)',
+              color: 'var(--color-text)', textAlign: 'left',
+            }}
+          >
+            <span style={{ fontSize: 13.5, lineHeight: 1.4, paddingRight: 12 }}>{insight.action}</span>
+            <ArrowRight size={16} color="var(--color-accent)" style={{ flexShrink: 0 }} />
+          </button>
         </div>
       </Screen>
       <TabBar />

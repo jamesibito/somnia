@@ -1,43 +1,43 @@
 import { useNavigate } from 'react-router-dom'
 import { Moon, Sunrise, Play, ChevronRight, Sparkles } from 'lucide-react'
-import { Screen, Eyebrow, Display, BigNumber, StageBar, Hairline } from '../components/ui'
+import { Screen, Eyebrow, Display, BigNumber, StageBar } from '../components/ui'
 import SpiralMark from '../components/SpiralMark'
 import TabBar from '../components/TabBar'
-import { useAudio } from '../context/AudioProvider'
-import { SOUNDSCAPES } from '../data/soundscapes'
-import { LAST_NIGHT, fmtDuration, USER, ALARM, getMeditation } from '../data/content'
+import { usePlan } from '../context/PlanProvider'
+import { LAST_NIGHT, fmtDuration, USER } from '../data/content'
+import { deriveStreak } from '../utils/insight'
+import { SESSIONS } from '../data/content'
 
 export default function Tonight() {
   const navigate = useNavigate()
-  const { play } = useAudio()
+  const { plan, prefs } = usePlan()
   const ln = LAST_NIGHT
-  const med = getMeditation('letting-go')!
-  const rainstorm = SOUNDSCAPES[0]
-
-  const beginWindDown = async () => {
-    await play(rainstorm)
-    navigate('/soundscape/' + rainstorm.id)
-  }
+  const streak = deriveStreak(SESSIONS, prefs)
 
   return (
     <>
       <Screen tabSafe>
-        {/* Header */}
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
           <SpiralMark size={22} color="var(--color-text)" strokeWidth={1.4} />
-          <Eyebrow>Tue · 14 May</Eyebrow>
+          <Eyebrow>Thu · 16 May</Eyebrow>
         </header>
 
-        {/* Greeting */}
         <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginBottom: 14 }}>
           Good evening, {USER.firstName}
         </p>
-        <Display size={36} style={{ marginBottom: 36 }}>
+        <Display size={36} style={{ marginBottom: 14 }}>
           Wind‑down begins in{' '}
           <span style={{ color: 'var(--color-accent-bright)', borderBottom: '2px solid rgba(201,187,245,0.4)', paddingBottom: 2 }}>
-            38m
+            {plan.windDownMinutes}m
           </span>.
         </Display>
+        {/* The loop, made visible: why tonight looks the way it does */}
+        <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 34 }}>
+          Shaped for <span style={{ color: 'var(--color-text)' }}>{plan.primaryGoal.toLowerCase()}</span>
+          {plan.adjusted && (
+            <> · bedtime moved <span style={{ color: 'var(--color-accent)' }}>{prefs.bedtimeAdjustMin}m earlier</span> after last night</>
+          )}.
+        </p>
 
         {/* Last night */}
         <section
@@ -61,9 +61,7 @@ export default function Tonight() {
             </div>
             <ChevronRight size={18} color="var(--color-text-faint)" style={{ marginLeft: 'auto', alignSelf: 'center' }} />
           </div>
-          <div style={{ marginTop: 20 }}>
-            <StageBar {...ln.stages} />
-          </div>
+          <div style={{ marginTop: 20 }}><StageBar {...ln.stages} /></div>
           <div style={{ display: 'flex', gap: 18, marginTop: 12 }}>
             <Legend c="var(--color-accent)" label="Deep" v={ln.stages.deep} />
             <Legend c="var(--color-accent-dim)" label="REM" v={ln.stages.rem} />
@@ -71,35 +69,42 @@ export default function Tonight() {
           </div>
         </section>
 
-        {/* Tonight's plan */}
+        {/* Tonight's plan — derived from onboarding answers */}
         <section style={{ paddingTop: 24, borderTop: '1px solid var(--color-hair)', marginBottom: 30 }}>
           <Eyebrow style={{ display: 'block', marginBottom: 14 }}>Tonight's plan</Eyebrow>
           <PlanRow
             icon={<Moon size={15} color="var(--color-text-muted)" strokeWidth={1.5} />}
             label="Bedtime"
-            value={USER.bedtimeGoal}
+            value={plan.bedtimeLabel}
+            sub={plan.adjusted ? 'adjusted' : undefined}
             onClick={() => navigate('/profile')}
           />
           <PlanRow
             icon={<SpiralMark size={15} color="var(--color-accent)" strokeWidth={1.6} />}
-            label={rainstorm.name}
-            value={rainstorm.layers.map(l => l.label).slice(0, 2).join(' + ')}
-            onClick={() => navigate('/soundscape/' + rainstorm.id)}
+            label={plan.soundscape.name}
+            value={plan.soundscape.layers.map(l => l.label).slice(0, 2).join(' + ')}
+            onClick={() => navigate('/soundscape/' + plan.soundscape.id)}
+          />
+          <PlanRow
+            icon={<Sparkles size={15} color="var(--color-text-muted)" strokeWidth={1.5} />}
+            label={plan.meditation.title}
+            value={`${plan.meditation.minutes} min`}
+            onClick={() => navigate('/meditate/' + plan.meditation.id)}
           />
           <PlanRow
             icon={<Sunrise size={15} color="var(--color-text-muted)" strokeWidth={1.5} />}
             label="Wake"
-            value={ALARM.target}
+            value={plan.wakeLabel}
             sub="Sunrise"
             onClick={() => navigate('/alarm')}
             last
           />
         </section>
 
-        {/* Primary CTA */}
+        {/* Primary action — enters the lights-out core job */}
         <button
           className="pressable focusable"
-          onClick={beginWindDown}
+          onClick={() => navigate('/night')}
           style={{
             width: '100%', padding: '18px 22px', borderRadius: 16,
             background: 'var(--color-accent)', color: 'var(--color-accent-ink)',
@@ -108,40 +113,17 @@ export default function Tonight() {
             boxShadow: '0 14px 40px rgba(181,168,232,0.24), inset 0 1px 0 rgba(255,255,255,0.3)',
           }}
         >
-          <span>Begin wind‑down</span>
+          <span>Begin tonight</span>
           <Play size={16} fill="var(--color-accent-ink)" stroke="var(--color-accent-ink)" />
         </button>
 
-        {/* Meditation */}
-        <button
-          className="pressable focusable"
-          onClick={() => navigate('/meditate/' + med.id)}
-          style={{
-            marginTop: 12, width: '100%', padding: '15px 20px', borderRadius: 16,
-            background: 'var(--color-surface)', border: '1px solid var(--color-hair)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Sparkles size={15} color="var(--color-accent)" />
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--color-text)' }}>
-                {med.title}
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
-                {med.narrator} · {med.minutes} min
-              </div>
-            </div>
-          </div>
-          <ChevronRight size={16} color="var(--color-text-faint)" />
-        </button>
-
-        <Hairline mt={28} />
         <p style={{
           textAlign: 'center', fontFamily: 'var(--font-serif)', fontStyle: 'italic',
-          fontSize: 13, color: 'var(--color-text-faint)', marginTop: 20,
+          fontSize: 13, color: 'var(--color-text-faint)', marginTop: 24,
         }}>
-          {USER.streak} nights in rhythm. Keep going.
+          {streak.broken
+            ? 'A missed night isn’t a broken streak. Begin again tonight.'
+            : `${streak.count} nights you hit your bedtime. Hold it.`}
         </p>
       </Screen>
       <TabBar />
@@ -177,7 +159,7 @@ function PlanRow({ icon, label, value, sub, onClick, last }: {
         <span style={{ fontSize: 15, color: 'var(--color-text)' }}>{label}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {sub && <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{sub}</span>}
+        {sub && <span style={{ fontSize: 11, color: 'var(--color-accent)' }}>{sub}</span>}
         <span style={{ fontSize: 14, color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
         <ChevronRight size={15} color="var(--color-text-faint)" />
       </div>

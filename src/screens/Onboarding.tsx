@@ -4,6 +4,7 @@ import { Check } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 import SpiralMark from '../components/SpiralMark'
 import { Eyebrow, Display, PrimaryButton } from '../components/ui'
+import { usePlan } from '../context/PlanProvider'
 
 type Step = 'welcome' | 'schedule' | 'goals' | 'sounds' | 'permissions'
 const ORDER: Step[] = ['welcome', 'schedule', 'goals', 'sounds', 'permissions']
@@ -19,6 +20,7 @@ const SOUND_PREFS = ['Rain', 'Ocean', 'Forest', 'Fire', 'White noise', 'Pure dro
 
 export default function Onboarding() {
   const navigate = useNavigate()
+  const { setPrefs } = usePlan()
   const [step, setStep] = useState<Step>('welcome')
   const [goals, setGoals] = useState<string[]>(['Quiet a racing mind'])
   const [sounds, setSounds] = useState<string[]>(['Rain'])
@@ -26,9 +28,22 @@ export default function Onboarding() {
   const [bedM, setBedM] = useState(30)
 
   const idx = ORDER.indexOf(step)
+  const finish = () => {
+    // 9–12 on the wheel are PM; 12 means midnight (00:00).
+    const hour24 = bedH === 12 ? 0 : bedH + 12
+    setPrefs({
+      bedtimeHour: hour24,
+      bedtimeMinute: bedM,
+      goals,
+      soundPrefs: sounds,
+      bedtimeAdjustMin: 0,
+      onboarded: true,
+    })
+    navigate('/tonight')
+  }
   const next = () => {
     if (idx < ORDER.length - 1) setStep(ORDER[idx + 1])
-    else navigate('/tonight')
+    else finish()
   }
 
   const toggle = (arr: string[], set: (v: string[]) => void, v: string) =>
