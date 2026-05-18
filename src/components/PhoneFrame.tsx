@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useClock } from '../context/ClockProvider'
+import NowPlayingDot from './NowPlayingDot'
 
 /** Status bar + home indicator + device shell. Screens render inside. */
 export default function PhoneFrame({ children }: { children: ReactNode }) {
@@ -27,6 +28,7 @@ export default function PhoneFrame({ children }: { children: ReactNode }) {
         </div>
       </div>
       {children}
+      <NowPlayingDot />
       <div className="home-indicator" />
     </div>
   )
