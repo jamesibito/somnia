@@ -57,8 +57,8 @@ export default function AtmosphereLayer({ variant = 'default', grain = 0.06, rea
   // existing non-reactive call sites render byte-identically to before.
   const reactiveStyle = reactive
     ? {
-        transform: 'scale(calc(1 + var(--amp, 0) * 0.05))',
-        opacity: 'calc(0.88 + var(--amp, 0) * 0.12)' as unknown as number,
+        transform: 'scale(calc(1 + var(--amp, 0) * 0.05 + var(--breath, 0) * 0.045))',
+        opacity: 'calc(0.86 + var(--amp, 0) * 0.1 + var(--breath, 0) * 0.06)' as unknown as number,
         transition: 'transform 120ms linear',
         willChange: 'transform',
       }

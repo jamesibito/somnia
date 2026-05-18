@@ -58,6 +58,33 @@ export default function MeditatePlayer() {
     return () => clearTimeout(timer)
   }, [playing])
 
+  // Drive --breath (0..1) on .phone-shell so the atmosphere swells with the
+  // guided breath. Single owner of --breath. Continuous rAF synced to the
+  // 4-4-6 cycle (4s in, 4s hold, 6s out), smoothed; reset on unmount/pause.
+  useEffect(() => {
+    const shell = document.querySelector('.phone-shell') as HTMLElement | null
+    if (!shell) return
+    if (!playing || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      shell.style.setProperty('--breath', '0')
+      return
+    }
+    const CYCLE = 14000, IN = 4000, HOLD = 4000
+    const smooth = (x: number) => x * x * (3 - 2 * x)
+    let raf = 0
+    const t0 = performance.now()
+    const tick = (now: number) => {
+      const p = (now - t0) % CYCLE
+      let b: number
+      if (p < IN) b = smooth(p / IN)
+      else if (p < IN + HOLD) b = 1
+      else b = 1 - smooth((p - IN - HOLD) / (CYCLE - IN - HOLD))
+      shell.style.setProperty('--breath', b.toFixed(3))
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => { cancelAnimationFrame(raf); shell.style.setProperty('--breath', '0') }
+  }, [playing])
+
   if (!m) return null
 
   const chapter = [...m.chapters].reverse().find(c => t >= c.at) ?? m.chapters[0]
