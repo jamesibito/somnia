@@ -26,6 +26,8 @@ let ctx: AudioContext | null = null
 let master: GainNode | null = null
 let busInput: GainNode | null = null
 let reverbBus: GainNode | null = null
+let analyser: AnalyserNode | null = null
+let ampData: Uint8Array | null = null
 let noiseBuffer: AudioBuffer | null = null
 const layers = new Map<LayerId, Layer>()
 let started = false
@@ -57,6 +59,13 @@ function audioCtx(): AudioContext {
   glue.release.value = 0.32
 
   busInput = ctx.createGain()
+
+  // ── Analyser tap (sink only — never routed onward, cannot alter audio) ──
+  analyser = ctx.createAnalyser()
+  analyser.fftSize = 256
+  analyser.smoothingTimeConstant = 0.85
+  ampData = new Uint8Array(analyser.frequencyBinCount)
+  busInput.connect(analyser)
 
   // ── Convolution space ──
   const convolver = ctx.createConvolver()
@@ -346,6 +355,16 @@ export function setMaster(v: number) {
   if (master && ctx) master.gain.setTargetAtTime(v, ctx.currentTime, 0.05)
 }
 
+/** Current normalized loudness 0..1 for visuals. Cheap; safe to poll per frame. */
+export function getAmplitude(): number {
+  if (!analyser || !ampData || !started) return 0
+  // The TS DOM lib types this as Uint8Array<ArrayBuffer>; our buffer matches.
+  analyser.getByteFrequencyData(ampData as Uint8Array<ArrayBuffer>)
+  let sum = 0
+  for (let i = 0; i < ampData.length; i++) sum += ampData[i]
+  return sum / ampData.length / 255
+}
+
 export function setLayer(id: LayerId, volume: number) {
   const c = audioCtx()
   let layer = layers.get(id)
@@ -371,6 +390,12 @@ export function stopAll() {
   })
   layers.clear()
   started = false
+  // NB: the analyser is a persistent tap on the persistent busInput (like
+  // master/busInput, audioCtx() is created once and never torn down). We
+  // deliberately do NOT disconnect it here — doing so would permanently kill
+  // amplitude on the next play since audioCtx() early-returns and never
+  // recreates it. getAmplitude() already gates on `started`, so it reads 0
+  // while stopped without any disconnect.
 }
 
 export function fadeOutAndStop(seconds: number) {
