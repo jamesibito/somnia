@@ -4,6 +4,8 @@ import { Sparkles, Waves, Sunrise } from 'lucide-react'
 import { usePlan } from '../context/PlanProvider'
 import { useAudio } from '../context/AudioProvider'
 import { useSession } from '../context/SessionProvider'
+import { useClock } from '../context/ClockProvider'
+import TimeCompression from '../components/TimeCompression'
 
 /**
  * Night mode — the lights-out core job.
@@ -21,6 +23,8 @@ export default function NightMode() {
   const { plan, prefs } = usePlan()
   const audio = useAudio()
   const session = useSession()
+  const { setPhase: setClockPhase } = useClock()
+  const [passing, setPassing] = useState(false)
 
   // Minutes "asleep" = the user's planned schedule (bedtime adjustment applied),
   // which is what a full night skipped-to-morning represents.
@@ -69,6 +73,7 @@ export default function NightMode() {
 
   const begin = async (withMeditation: boolean) => {
     recordBegin(withMeditation)
+    setClockPhase('winding-down')
     await audio.play(plan.soundscape)
     audio.startSleepTimer(45)
     setPhase('settling')
@@ -204,7 +209,7 @@ export default function NightMode() {
               </p>
               <button
                 className="pressable focusable"
-                onClick={() => { session.completeNight(minutesAsleep); audio.stop(); navigate('/morning') }}
+                onClick={() => setPassing(true)}
                 style={{
                   marginTop: 16, padding: '14px 26px', borderRadius: 999,
                   border: '1px solid var(--color-hair)', color: 'var(--color-text-muted)',
@@ -218,6 +223,14 @@ export default function NightMode() {
           </div>
         )}
       </div>
+      {passing && (
+        <TimeCompression
+          onComplete={() => {
+            session.completeNight(minutesAsleep)
+            navigate('/morning')
+          }}
+        />
+      )}
       <div className="home-indicator" />
     </div>
   )

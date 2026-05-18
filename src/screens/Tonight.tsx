@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Moon, Sunrise, Play, ChevronRight, Sparkles } from 'lucide-react'
 import { Screen, Eyebrow, Display, BigNumber, StageBar } from '../components/ui'
@@ -5,6 +6,7 @@ import SpiralMark from '../components/SpiralMark'
 import TabBar from '../components/TabBar'
 import { usePlan } from '../context/PlanProvider'
 import { useSession } from '../context/SessionProvider'
+import { useClock } from '../context/ClockProvider'
 import { fmtDuration, USER } from '../data/content'
 import { deriveStreak } from '../utils/insight'
 import { mergedSessions } from '../utils/sessions'
@@ -13,6 +15,8 @@ export default function Tonight() {
   const navigate = useNavigate()
   const { plan, prefs } = usePlan()
   const { history } = useSession()
+  const { greeting, setPhase } = useClock()
+  useEffect(() => { setPhase('evening') }, [setPhase])
   const merged = mergedSessions(history)
   const ln = merged[merged.length - 1]
   const streak = deriveStreak(merged, prefs)
@@ -26,7 +30,7 @@ export default function Tonight() {
         </header>
 
         <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginBottom: 14 }}>
-          Good evening, {USER.firstName}
+          {greeting}, {USER.firstName}
         </p>
         <Display size={36} style={{ marginBottom: 14 }}>
           Wind‑down at{' '}

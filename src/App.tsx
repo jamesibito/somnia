@@ -5,6 +5,7 @@ import { AudioProvider } from './context/AudioProvider'
 import { JournalProvider } from './context/JournalProvider'
 import { PlanProvider } from './context/PlanProvider'
 import { SessionProvider } from './context/SessionProvider'
+import { ClockProvider } from './context/ClockProvider'
 
 import Splash from './screens/Splash'
 import Onboarding from './screens/Onboarding'
@@ -36,6 +37,7 @@ export default function App() {
       <AudioProvider>
         <PlanProvider>
         <SessionProvider>
+        <ClockProvider>
         <JournalProvider>
           <PhoneFrame>
             <ScrollReset />
@@ -58,6 +60,7 @@ export default function App() {
             </Routes>
           </PhoneFrame>
         </JournalProvider>
+        </ClockProvider>
         </SessionProvider>
         </PlanProvider>
       </AudioProvider>

@@ -5,6 +5,7 @@ import AtmosphereLayer from '../components/AtmosphereLayer'
 import { BigNumber, PrimaryButton, Eyebrow } from '../components/ui'
 import { usePlan } from '../context/PlanProvider'
 import { useSession } from '../context/SessionProvider'
+import { useClock } from '../context/ClockProvider'
 import { fmtDuration } from '../data/content'
 import { mergedSessions } from '../utils/sessions'
 import { deriveInsight } from '../utils/insight'
@@ -15,6 +16,8 @@ export default function GoodMorning() {
   const navigate = useNavigate()
   const { prefs, applyBedtimeAdjustment } = usePlan()
   const { lastSession, history, pendingNight, completeNight, setRested: persistRested } = useSession()
+  const { clockLabel, setPhase } = useClock()
+  useEffect(() => { setPhase('morning') }, [setPhase])
   const [rested, setRested] = useState<number | null>(null)
   const [stage, setStage] = useState<'score' | 'checkin' | 'insight'>('score')
   const closed = useRef(false)
@@ -48,7 +51,7 @@ export default function GoodMorning() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 30 }}>
           <Sunrise size={20} color="var(--color-accent)" />
-          <Eyebrow>{new Date().toLocaleDateString('en', { weekday: 'long' })} morning · 7:02</Eyebrow>
+          <Eyebrow>{new Date().toLocaleDateString('en', { weekday: 'long' })} morning · {clockLabel}</Eyebrow>
         </div>
 
         {stage === 'score' && (
@@ -109,7 +112,7 @@ export default function GoodMorning() {
             </div>
             <button
               className="pressable focusable"
-              onClick={() => navigate('/journal/new')}
+              onClick={() => navigate('/journal/new?return=/morning')}
               style={{
                 padding: 18, borderRadius: 16, background: 'var(--color-surface)',
                 border: '1px solid var(--color-hair)', textAlign: 'left', marginBottom: 14,

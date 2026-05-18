@@ -1,12 +1,16 @@
 import type { ReactNode } from 'react'
+import { useClock } from '../context/ClockProvider'
 
 /** Status bar + home indicator + device shell. Screens render inside. */
 export default function PhoneFrame({ children }: { children: ReactNode }) {
+  const { clockLabel } = useClock()
+  // Status bar shows hour:minute only (no AM/PM) to read like a phone clock.
+  const hm = clockLabel.replace(/\s?(AM|PM)$/i, '')
   return (
     <div className="phone-shell">
       <div className="status-bar">
         <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>
-          11:42
+          {hm}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden>
