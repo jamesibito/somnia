@@ -38,6 +38,9 @@ export interface BeginNightArgs {
 interface SessionState {
   history: LoggedSession[]
   lastSession: LoggedSession | null
+  /** true once beginNight ran and completeNight hasn't — lets GoodMorning
+   * close the loop as a fallback regardless of which path the user took. */
+  pendingNight: boolean
   beginNight: (a: BeginNightArgs) => void
   markMeditationDone: () => void
   completeNight: (minutesAsleep: number) => LoggedSession | null
@@ -136,7 +139,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const lastSession = history.length ? history[history.length - 1] : null
 
   return (
-    <Ctx.Provider value={{ history, lastSession, beginNight, markMeditationDone, completeNight, setRested, reset }}>
+    <Ctx.Provider value={{
+      history, lastSession,
+      pendingNight: phase.current === 'inProgress',
+      beginNight, markMeditationDone, completeNight, setRested, reset,
+    }}>
       {children}
     </Ctx.Provider>
   )

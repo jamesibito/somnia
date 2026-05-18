@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Sparkles, Waves, Sunrise } from 'lucide-react'
 import { usePlan } from '../context/PlanProvider'
 import { useAudio } from '../context/AudioProvider'
+import { useSession } from '../context/SessionProvider'
 
 /**
  * Night mode — the lights-out core job.
@@ -17,8 +18,31 @@ type Phase = 'choose' | 'settling' | 'asleep'
 
 export default function NightMode() {
   const navigate = useNavigate()
-  const { plan } = usePlan()
+  const { plan, prefs } = usePlan()
   const audio = useAudio()
+  const session = useSession()
+
+  // Minutes "asleep" = the user's planned schedule (bedtime adjustment applied),
+  // which is what a full night skipped-to-morning represents.
+  const minutesAsleep = (() => {
+    const bed = prefs.bedtimeHour * 60 + prefs.bedtimeMinute - prefs.bedtimeAdjustMin
+    const wake = prefs.wakeHour * 60 + prefs.wakeMinute
+    return ((wake - bed) % 1440 + 1440) % 1440
+  })()
+
+  const recordBegin = (withMeditation: boolean) => {
+    session.beginNight({
+      soundscapeId: plan.soundscape.id,
+      soundscapeName: plan.soundscape.name,
+      meditationId: withMeditation ? plan.meditation.id : null,
+      meditationTitle: withMeditation ? plan.meditation.title : null,
+      keptRecommended: true, // in Night mode the soundscape is the recommended one
+      bedtime: plan.bedtimeLabel,
+      wake: plan.wakeLabel,
+      bedtimeAdjustApplied: plan.adjusted,
+      nightlyGoalMin: prefs.nightlyGoalHours * 60,
+    })
+  }
   const [phase, setPhase] = useState<Phase>('choose')
   const [dim, setDim] = useState(false)
   const idleTimer = useRef<number | null>(null)
@@ -44,6 +68,7 @@ export default function NightMode() {
   }, [])
 
   const begin = async (withMeditation: boolean) => {
+    recordBegin(withMeditation)
     await audio.play(plan.soundscape)
     audio.startSleepTimer(45)
     setPhase('settling')
@@ -179,7 +204,7 @@ export default function NightMode() {
               </p>
               <button
                 className="pressable focusable"
-                onClick={() => { audio.stop(); navigate('/morning') }}
+                onClick={() => { session.completeNight(minutesAsleep); audio.stop(); navigate('/morning') }}
                 style={{
                   marginTop: 16, padding: '14px 26px', borderRadius: 999,
                   border: '1px solid var(--color-hair)', color: 'var(--color-text-muted)',

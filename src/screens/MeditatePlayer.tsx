@@ -4,11 +4,13 @@ import { Pause, Play } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 import { TopBar, Eyebrow } from '../components/ui'
 import { getMeditation } from '../data/content'
+import { useSession } from '../context/SessionProvider'
 import * as engine from '../audio/engine'
 
 export default function MeditatePlayer() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const session = useSession()
   const m = getMeditation(id || '')
   const [t, setT] = useState(0)
   const [playing, setPlaying] = useState(true)
@@ -36,6 +38,12 @@ export default function MeditatePlayer() {
     tick.current = window.setInterval(() => setT(x => Math.min(total, x + 1)), 1000)
     return () => { if (tick.current) clearInterval(tick.current) }
   }, [playing, total])
+
+  // Completing the practice counts toward the night's score.
+  const done = t >= total
+  useEffect(() => {
+    if (done) session.markMeditationDone()
+  }, [done, session])
 
   // Breathing cadence 4-4-6
   useEffect(() => {
@@ -134,14 +142,24 @@ export default function MeditatePlayer() {
           </button>
         </div>
 
-        {t >= total && (
-          <button
-            className="pressable"
-            onClick={() => navigate('/journal/new')}
-            style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: 'var(--color-accent)', fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}
-          >
-            Practice complete — log a dream?
-          </button>
+        {done && (
+          session.pendingNight ? (
+            <button
+              className="pressable focusable"
+              onClick={() => navigate('/morning')}
+              style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: 'var(--color-accent)', fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}
+            >
+              Practice complete — let the night carry on →
+            </button>
+          ) : (
+            <button
+              className="pressable focusable"
+              onClick={() => navigate('/journal/new')}
+              style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: 'var(--color-accent)', fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}
+            >
+              Practice complete — log a dream?
+            </button>
+          )
         )}
       </div>
     </div>
