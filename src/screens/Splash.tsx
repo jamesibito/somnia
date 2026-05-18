@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import SpiralMark from '../components/SpiralMark'
+import Wordmark from '../components/Wordmark'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 
 export default function Splash() {
@@ -26,17 +27,7 @@ export default function Splash() {
           <SpiralMark size={64} color="var(--color-accent)" strokeWidth={1.2} spinning />
         </div>
         <div className="rise" style={{ textAlign: 'center', animationDelay: '300ms' }}>
-          <div style={{
-            fontFamily: 'var(--font-wordmark)',
-            fontWeight: 500,
-            fontSize: 32,
-            letterSpacing: '0.28em',
-            textTransform: 'uppercase',
-            color: 'var(--color-text)',
-            paddingLeft: '0.28em',
-          }}>
-            Somnia
-          </div>
+          <Wordmark height={30} color="var(--color-text)" />
           <div style={{
             fontFamily: 'var(--font-serif)',
             fontStyle: 'italic',
