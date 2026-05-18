@@ -68,7 +68,7 @@ export default function MeditatePlayer() {
 
   return (
     <div className="screen">
-      <AtmosphereLayer variant="calm" grain={0.06} />
+      <AtmosphereLayer variant="calm" grain={0.06} reactive />
       <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', padding: '64px 28px 40px', display: 'flex', flexDirection: 'column' }}>
         <TopBar onBack right={<span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-muted)' }}>{mm}:{ss}</span>} />
 

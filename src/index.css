@@ -55,6 +55,11 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
 /* ─── Phone shell ─── */
 .phone-shell {
+  /* Reactive CSS vars — single owner each:
+     --amp  → AtmosphereLayer (audio amplitude, 0..1)
+     --breath → MeditatePlayer/NightMode (breathing cadence, 0..1) */
+  --amp: 0;
+  --breath: 0;
   width: 390px;
   height: 844px;
   position: relative;

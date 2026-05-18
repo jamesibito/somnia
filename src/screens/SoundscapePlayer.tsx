@@ -45,7 +45,7 @@ export default function SoundscapePlayer() {
 
   return (
     <div className="screen">
-      <AtmosphereLayer variant="calm" grain={0.07} />
+      <AtmosphereLayer variant="calm" grain={0.07} reactive />
       {/* Reactive glow that strengthens while playing */}
       <div aria-hidden style={{
         position: 'absolute', top: '12%', left: '50%', transform: 'translateX(-50%)',
