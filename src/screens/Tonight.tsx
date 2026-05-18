@@ -4,15 +4,18 @@ import { Screen, Eyebrow, Display, BigNumber, StageBar } from '../components/ui'
 import SpiralMark from '../components/SpiralMark'
 import TabBar from '../components/TabBar'
 import { usePlan } from '../context/PlanProvider'
-import { LAST_NIGHT, fmtDuration, USER } from '../data/content'
+import { useSession } from '../context/SessionProvider'
+import { fmtDuration, USER } from '../data/content'
 import { deriveStreak } from '../utils/insight'
-import { SESSIONS } from '../data/content'
+import { mergedSessions } from '../utils/sessions'
 
 export default function Tonight() {
   const navigate = useNavigate()
   const { plan, prefs } = usePlan()
-  const ln = LAST_NIGHT
-  const streak = deriveStreak(SESSIONS, prefs)
+  const { history } = useSession()
+  const merged = mergedSessions(history)
+  const ln = merged[merged.length - 1]
+  const streak = deriveStreak(merged, prefs)
 
   return (
     <>

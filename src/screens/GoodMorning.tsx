@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Sunrise, ArrowRight } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 import { BigNumber, PrimaryButton, Eyebrow } from '../components/ui'
 import { usePlan } from '../context/PlanProvider'
-import { SESSIONS, fmtDuration } from '../data/content'
+import { useSession } from '../context/SessionProvider'
+import { fmtDuration } from '../data/content'
+import { mergedSessions } from '../utils/sessions'
 import { deriveInsight } from '../utils/insight'
 
 const RESTED = ['Wiped', 'Foggy', 'Okay', 'Clear', 'Sharp']
@@ -12,10 +14,27 @@ const RESTED = ['Wiped', 'Foggy', 'Okay', 'Clear', 'Sharp']
 export default function GoodMorning() {
   const navigate = useNavigate()
   const { prefs, applyBedtimeAdjustment } = usePlan()
-  const ln = SESSIONS[SESSIONS.length - 1]
-  const insight = deriveInsight(SESSIONS, prefs)
+  const { lastSession, history, pendingNight, completeNight, setRested: persistRested } = useSession()
   const [rested, setRested] = useState<number | null>(null)
   const [stage, setStage] = useState<'score' | 'checkin' | 'insight'>('score')
+  const closed = useRef(false)
+
+  // Close the loop regardless of path: if a night is still in progress (e.g.
+  // the user came via the meditation path), score + record it now.
+  useEffect(() => {
+    if (pendingNight && !closed.current) {
+      closed.current = true
+      const bed = prefs.bedtimeHour * 60 + prefs.bedtimeMinute - prefs.bedtimeAdjustMin
+      const wake = prefs.wakeHour * 60 + prefs.wakeMinute
+      completeNight(((wake - bed) % 1440 + 1440) % 1440)
+    }
+  }, [pendingNight, completeNight, prefs])
+
+  // merged's last element is the real night just logged, or the curated
+  // STRONG_SEED on a fresh first-run — either way it's always populated.
+  const merged = mergedSessions(history)
+  const ln = merged[merged.length - 1]
+  const insight = deriveInsight(merged, prefs, rested)
 
   const accept = () => {
     applyBedtimeAdjustment(insight.bedtimeAdjustMin)
@@ -42,7 +61,7 @@ export default function GoodMorning() {
               <div style={{ paddingBottom: 14 }}>
                 <div style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--color-text)' }}>{ln.quality}</div>
                 <div style={{ fontSize: 13, color: 'var(--color-text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-                  {fmtDuration(ln.durationMin)} · woke 1×
+                  {fmtDuration(ln.durationMin)} · {ln.bedtime} → {ln.wake}
                 </div>
               </div>
             </div>
@@ -71,7 +90,7 @@ export default function GoodMorning() {
                   <button
                     key={label}
                     className="pressable"
-                    onClick={() => setRested(i)}
+                    onClick={() => { setRested(i); if (lastSession) persistRested(lastSession.id, i) }}
                     style={{
                       flex: 1, padding: '16px 0', borderRadius: 14,
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,

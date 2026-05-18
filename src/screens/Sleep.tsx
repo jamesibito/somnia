@@ -3,13 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { Screen, Eyebrow, Display, BigNumber, Hairline, TopBar } from '../components/ui'
 import TabBar from '../components/TabBar'
-import { SESSIONS, fmtDuration } from '../data/content'
+import { fmtDuration, type SleepSession } from '../data/content'
 import { usePlan } from '../context/PlanProvider'
+import { useSession } from '../context/SessionProvider'
 import { deriveInsight, deriveStreak } from '../utils/insight'
+import { mergedSessions } from '../utils/sessions'
 
 export default function Sleep() {
   const navigate = useNavigate()
   const { prefs, applyBedtimeAdjustment } = usePlan()
+  const { history } = useSession()
+  const SESSIONS = mergedSessions(history)
   const insight = deriveInsight(SESSIONS, prefs)
   const streak = deriveStreak(SESSIONS, prefs)
   const [sel, setSel] = useState(SESSIONS.length - 1)
@@ -65,7 +69,7 @@ export default function Sleep() {
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 18 }}>
           Tap a bar to inspect that night.
         </p>
-        <TrendChart selected={sel} onSelect={setSel} />
+        <TrendChart sessions={SESSIONS} selected={sel} onSelect={setSel} />
 
         <Hairline mt={30} mb={28} />
 
@@ -162,11 +166,11 @@ function Hypnogram({ seed }: { seed: number }) {
   )
 }
 
-function TrendChart({ selected, onSelect }: { selected: number; onSelect: (i: number) => void }) {
+function TrendChart({ sessions, selected, onSelect }: { sessions: SleepSession[]; selected: number; onSelect: (i: number) => void }) {
   const max = 100
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 120 }}>
-      {SESSIONS.map((s, i) => {
+      {sessions.map((s, i) => {
         const on = i === selected
         return (
           <button

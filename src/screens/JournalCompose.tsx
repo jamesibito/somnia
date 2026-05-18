@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { Screen, TopBar, Eyebrow, PrimaryButton } from '../components/ui'
 import { useJournal } from '../context/JournalProvider'
 import { usePlan } from '../context/PlanProvider'
-import { MOODS, LAST_NIGHT, type DreamEntry } from '../data/content'
+import { useSession } from '../context/SessionProvider'
+import { MOODS, type DreamEntry } from '../data/content'
+import { mergedSessions } from '../utils/sessions'
 
 const MOOD_KEYS = Object.keys(MOODS) as DreamEntry['mood'][]
 
@@ -11,6 +13,13 @@ export default function JournalCompose() {
   const navigate = useNavigate()
   const { add } = useJournal()
   const { plan } = usePlan()
+  const { lastSession, history } = useSession()
+  // The night this dream is tied to — the real logged night, or the curated
+  // strong-seed night on a fresh first-run.
+  const merged = mergedSessions(history)
+  const night = lastSession
+    ? { score: lastSession.score, quality: lastSession.quality, soundscape: lastSession.soundscapeName }
+    : { score: merged[merged.length - 1].score, quality: merged[merged.length - 1].quality, soundscape: plan.soundscape.name }
   const [mood, setMood] = useState<DreamEntry['mood']>('calm')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -23,11 +32,7 @@ export default function JournalCompose() {
       body: body.trim() || '—',
       tags: tags.split(',').map(t => t.trim()).filter(Boolean),
       // Tie this dream to last night — the loop, not a standalone note.
-      linkedSession: {
-        score: LAST_NIGHT.score,
-        quality: LAST_NIGHT.quality,
-        soundscape: plan.soundscape.name,
-      },
+      linkedSession: night,
     })
     navigate('/journal')
   }
@@ -53,7 +58,7 @@ export default function JournalCompose() {
       }}>
         <span style={{ width: 7, height: 7, borderRadius: 4, background: 'var(--color-accent)' }} />
         <span style={{ fontSize: 12.5, color: 'var(--color-text-muted)' }}>
-          Tied to last night — <span style={{ color: 'var(--color-text)' }}>{LAST_NIGHT.score} {LAST_NIGHT.quality}</span>, {plan.soundscape.name}
+          Tied to last night — <span style={{ color: 'var(--color-text)' }}>{night.score} {night.quality}</span>, {night.soundscape}
         </span>
       </div>
 

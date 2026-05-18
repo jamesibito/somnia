@@ -16,13 +16,26 @@ export interface Insight {
   bedtimeAdjustMin: number
 }
 
-export function deriveInsight(sessions: SleepSession[], prefs: Prefs): Insight {
+export function deriveInsight(sessions: SleepSession[], prefs: Prefs, restedIdx?: number | null): Insight {
   const week = sessions.slice(-7)
   const goalMin = prefs.nightlyGoalHours * 60
   const avgDuration = Math.round(week.reduce((a, s) => a + s.durationMin, 0) / week.length)
   const debtMin = goalMin - avgDuration
   const avgDeep = Math.round(week.reduce((a, s) => a + s.stages.deep, 0) / week.length)
   const worst = [...week].sort((a, b) => a.score - b.score)[0]
+  const lastNight = week[week.length - 1]
+
+  // Subjective override: the device liked the night, but you didn't. Your
+  // lived experience wins — this is what "it sharpens every future insight"
+  // actually means.
+  if (restedIdx != null && restedIdx <= 1 && lastNight && lastNight.score >= 72) {
+    return {
+      headline: `The number says ${lastNight.score}. You say ${restedIdx === 0 ? 'wiped' : 'foggy'}`,
+      detail: `Sensors called it a ${lastNight.quality.toLowerCase()} night, but you woke ${restedIdx === 0 ? 'wiped' : 'foggy'}. We trust you over the sensor — something the score can't see is costing you.`,
+      action: `Tonight's wind-down moves 5 min earlier and leans on the practice.`,
+      bedtimeAdjustMin: 5,
+    }
+  }
 
   // Primary lever: are they short of their own stated nightly goal?
   if (debtMin > 20) {
