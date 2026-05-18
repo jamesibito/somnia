@@ -23,7 +23,7 @@ export default function Sleep() {
   return (
     <>
       <Screen tabSafe variant="deep">
-        <TopBar title="Sleep" />
+        <TopBar title="Sleep" onBack />
 
         {/* Selected session hero */}
         <Eyebrow>{sel === SESSIONS.length - 1 ? 'Last night' : new Date(s.date).toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })}</Eyebrow>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Screen, TopBar, Eyebrow, PrimaryButton } from '../components/ui'
 import { useJournal } from '../context/JournalProvider'
 import { usePlan } from '../context/PlanProvider'
@@ -11,6 +11,9 @@ const MOOD_KEYS = Object.keys(MOODS) as DreamEntry['mood'][]
 
 export default function JournalCompose() {
   const navigate = useNavigate()
+  // Where to go after saving — lets the morning flow continue instead of
+  // dead-ending in the Journal tab.
+  const returnTo = new URLSearchParams(useLocation().search).get('return') || '/journal'
   const { add } = useJournal()
   const { plan } = usePlan()
   const { lastSession, history } = useSession()
@@ -34,7 +37,7 @@ export default function JournalCompose() {
       // Tie this dream to last night — the loop, not a standalone note.
       linkedSession: night,
     })
-    navigate('/journal')
+    navigate(returnTo)
   }
 
   return (
