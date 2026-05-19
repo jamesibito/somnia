@@ -52,9 +52,17 @@ never uses it.
 - Everything respects `prefers-reduced-motion`.
 
 ## Sound
-- **Procedural Web Audio synthesis** — no audio files, no licensing, fully
-  deployable. The soundscape mixer drives real-time synthesized layers (rain,
-  thunder, wind, tide, fire, drone) with per-layer gain.
+- **Hybrid Web Audio** (revised from procedural-only). Textural layers prefer
+  recorded loops for realism (rain, fire, tide, wind, thunder, crickets, harp,
+  bubbles, water); tonal beds (`drone`) stay procedural. Rationale: recorded
+  texture is far more immersive *and* cheaper at runtime (buffer playback vs.
+  real-time DSP); the reactive analyser + convolution-reverb graph is identical
+  either way.
+- **Graceful degradation:** every textural layer falls back to its original
+  procedural synthesis if a clip is missing, so the app is always fully
+  playable with zero audio files and auto-upgrades when loops are added.
+- Loops are lazy-loaded per soundscape, `.ogg` (Opus) + `.m4a` (AAC) fallback.
+  *(Current loops = CC0 placeholders; final pass swaps to Pixabay-licensed.)*
 - UI is silent by default (a sleep app respects silence). Optional cues later.
 
 ## Personalization (future)

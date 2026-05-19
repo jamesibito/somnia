@@ -1,20 +1,28 @@
 /**
- * Procedural soundscape engine — high-fidelity real-time Web Audio synthesis.
+ * Hybrid soundscape engine — graceful sample-or-synth.
  *
- * No audio files. Every layer is synthesized from noise + filters + modulation
- * + granular transients, then placed in a stereo field and a procedurally
- * generated convolution-reverb space. The mixer faders drive real GainNodes.
+ * Every textural layer prefers a recorded loop for realism, but falls back to
+ * the original procedural synthesis if the clip is missing/unsupported. So:
+ *   • with no audio files present → fully procedural (no regression, ever)
+ *   • drop loops into /public/audio → those layers auto-upgrade to recordings
+ * Tonal beds (`drone`) are always procedural. Sampled or synthesized, every
+ * layer flows through the same dark convolution space and the analyser tap,
+ * so the reactive atmosphere/breath visuals are unaffected by the source.
  *
  * Signal path:
  *   layer → [shaping] → layerGain ─┬─ dry ──────────────► busInput
  *                                  └─ send → reverbBus ──► busInput
- *   busInput → warmth low-shelf → soft compressor → master → destination
+ *   busInput → lowBoost → warmth → soft compressor → master → destination
  *
- * The convolution space is what moves this from "white-noise generator" to
- * "rain in a room": every layer shares one dark, ~3s impulse response.
+ * Samples are lazy: a layer's clip is only fetched the first time that layer
+ * is turned up, and decoded buffers are cached for the session.
  */
 
-export type LayerId = 'rain' | 'thunder' | 'wind' | 'tide' | 'fire' | 'drone'
+export type LayerId =
+  | 'rain' | 'thunder' | 'wind' | 'tide' | 'fire' | 'drone'
+  | 'crickets' | 'harp' | 'bubbles' | 'water'
+
+type Builder = (c: AudioContext, out: GainNode, send: GainNode) => () => void
 
 interface Layer {
   gain: GainNode
@@ -127,7 +135,6 @@ function makeImpulseResponse(c: AudioContext, seconds: number, decay: number): A
       const t = i / len
       const env = Math.pow(1 - t, decay)
       const w = (Math.random() * 2 - 1) * env
-      // one-pole lowpass → darker, more "room" than "metal"
       lp += 0.16 * (w - lp)
       d[i] = lp * 2.4
     }
@@ -152,11 +159,10 @@ function autoPan(c: AudioContext, node: StereoPannerNode, rate: number, depth: n
   return () => lfo.stop()
 }
 
-// ─── Layer builders ────────────────────────────────────────────────────────
+// ─── Procedural layer builders (fallbacks + beds) ──────────────────────────
 // Each returns a teardown and connects into (dry → out, wet → send).
 
 function buildRain(c: AudioContext, out: GainNode, send: GainNode) {
-  // Bed: bright filtered noise with a slow brightness shimmer.
   const src = noiseSource(c)
   const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900
   const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 8500
@@ -170,7 +176,6 @@ function buildRain(c: AudioContext, out: GainNode, send: GainNode) {
   src.start(); lfo.start()
   const stopPan = autoPan(c, bedPan, 0.05, 0.25)
 
-  // Granular droplets: short bandpassed transients, random pitch + pan.
   let timer: number, cancelled = false
   const drop = () => {
     if (cancelled) return
@@ -192,7 +197,6 @@ function buildRain(c: AudioContext, out: GainNode, send: GainNode) {
     timer = window.setTimeout(drop, 28 + Math.random() * 90)
   }
   drop()
-
   return () => { cancelled = true; clearTimeout(timer); src.stop(); lfo.stop(); stopPan() }
 }
 
@@ -211,7 +215,6 @@ function buildThunder(c: AudioContext, out: GainNode, send: GainNode) {
     const dur = close ? 3.2 + Math.random() * 2 : 4.5 + Math.random() * 3
     g.gain.setValueAtTime(0, now)
     if (close) {
-      // a crack, then the rolling body
       g.gain.linearRampToValueAtTime(1.0, now + 0.08)
       g.gain.exponentialRampToValueAtTime(0.45, now + 0.4)
       g.gain.exponentialRampToValueAtTime(0.001, now + dur)
@@ -221,7 +224,6 @@ function buildThunder(c: AudioContext, out: GainNode, send: GainNode) {
     }
     src.connect(lp).connect(g).connect(pn)
     pn.connect(out)
-    // thunder leans heavily on the room
     const wet = c.createGain(); wet.gain.value = close ? 1.4 : 1.0
     pn.connect(wet).connect(send)
     src.start(now); src.stop(now + dur + 0.3)
@@ -236,7 +238,6 @@ function buildWind(c: AudioContext, out: GainNode, send: GainNode) {
   const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 480; bp.Q.value = 1.1
   const amp = c.createGain(); amp.gain.value = 0.5
   const pn = panner(c)
-  // two LFOs → organic gusting on cutoff + amplitude
   const f1 = c.createOscillator(); const f1g = c.createGain()
   f1.frequency.value = 0.07; f1g.gain.value = 340
   f1.connect(f1g).connect(bp.frequency)
@@ -259,7 +260,6 @@ function buildTide(c: AudioContext, out: GainNode, send: GainNode) {
   lfo.type = 'sine'; lfo.frequency.value = 0.085
   lfoG.gain.value = 0.42; bias.offset.value = 0.46
   lfo.connect(lfoG).connect(swell.gain); bias.connect(swell.gain)
-  // crest hiss: brighten the filter at the top of each swell
   const crest = c.createGain(); crest.gain.value = 900
   lfo.connect(crest).connect(lp.frequency)
   const lpBias = c.createConstantSource(); lpBias.offset.value = 700
@@ -318,7 +318,6 @@ function buildDrone(c: AudioContext, out: GainNode, send: GainNode) {
     o.start()
     stops.push(() => o.stop())
   })
-  // slow filter breathing for depth
   const lfo = c.createOscillator(); const lfoG = c.createGain()
   lfo.frequency.value = 0.05; lfoG.gain.value = 220
   lfo.connect(lfoG).connect(lp.frequency)
@@ -327,18 +326,198 @@ function buildDrone(c: AudioContext, out: GainNode, send: GainNode) {
   return () => stops.forEach(s => s())
 }
 
-const BUILDERS: Record<LayerId, (c: AudioContext, out: GainNode, send: GainNode) => () => void> = {
-  rain: buildRain,
-  thunder: buildThunder,
-  wind: buildWind,
-  tide: buildTide,
-  fire: buildFire,
-  drone: buildDrone,
+/** Night crickets — pulsed bandpassed noise + a slow chorus swell. */
+function buildCrickets(c: AudioContext, out: GainNode, send: GainNode) {
+  const src = noiseSource(c)
+  const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 4600; bp.Q.value = 14
+  const trem = c.createGain(); trem.gain.value = 0.0001
+  const pn = panner(c, 0.1)
+  // chirp pulse ~ 16 Hz, gated by a slow on/off swell
+  const pulse = c.createOscillator(); pulse.type = 'square'; pulse.frequency.value = 16
+  const pulseG = c.createGain(); pulseG.gain.value = 0.22
+  const swell = c.createOscillator(); swell.type = 'sine'; swell.frequency.value = 0.06
+  const swellG = c.createGain(); swellG.gain.value = 0.18
+  const bias = c.createConstantSource(); bias.offset.value = 0.2
+  pulse.connect(pulseG).connect(trem.gain)
+  swell.connect(swellG).connect(trem.gain)
+  bias.connect(trem.gain)
+  src.connect(bp).connect(trem).connect(pn)
+  pn.connect(out); pn.connect(send)
+  src.start(); pulse.start(); swell.start(); bias.start()
+  const stopPan = autoPan(c, pn, 0.05, 0.3)
+  return () => { src.stop(); pulse.stop(); swell.stop(); bias.stop(); stopPan() }
+}
+
+/** Sparse harp — occasional plucked pentatonic notes, heavy on the room. */
+function buildHarp(c: AudioContext, out: GainNode, send: GainNode) {
+  const scale = [220, 247.5, 293.7, 330, 392, 440, 587.3] // A pentatonic-ish
+  let timer: number, cancelled = false
+  const pluck = () => {
+    if (cancelled) return
+    const f = scale[Math.floor(Math.random() * scale.length)]
+    const o = c.createOscillator(); o.type = 'triangle'; o.frequency.value = f
+    const o2 = c.createOscillator(); o2.type = 'sine'; o2.frequency.value = f * 2
+    const o2g = c.createGain(); o2g.gain.value = 0.18
+    const g = c.createGain()
+    const pn = panner(c, Math.random() * 1.0 - 0.5)
+    const now = c.currentTime
+    const peak = 0.16 + Math.random() * 0.12
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.linearRampToValueAtTime(peak, now + 0.006)
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 2.4 + Math.random() * 1.6)
+    o.connect(g); o2.connect(o2g).connect(g)
+    g.connect(pn)
+    pn.connect(out)
+    const wet = c.createGain(); wet.gain.value = 1.5
+    pn.connect(wet).connect(send) // harp lives mostly in the reverb
+    o.start(now); o2.start(now); o.stop(now + 4.2); o2.stop(now + 4.2)
+    timer = window.setTimeout(pluck, 1800 + Math.random() * 4200)
+  }
+  timer = window.setTimeout(pluck, 600 + Math.random() * 1800)
+  return () => { cancelled = true; clearTimeout(timer) }
+}
+
+/** Rising bubbles — short upward pitch blips at random intervals. */
+function buildBubbles(c: AudioContext, out: GainNode, send: GainNode) {
+  let timer: number, cancelled = false
+  const blip = () => {
+    if (cancelled) return
+    const o = c.createOscillator(); o.type = 'sine'
+    const g = c.createGain()
+    const pn = panner(c, Math.random() * 1.4 - 0.7)
+    const now = c.currentTime
+    const f0 = 320 + Math.random() * 360
+    o.frequency.setValueAtTime(f0, now)
+    o.frequency.exponentialRampToValueAtTime(f0 * 2.4, now + 0.08 + Math.random() * 0.06)
+    const peak = 0.06 + Math.random() * 0.1
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.linearRampToValueAtTime(peak, now + 0.006)
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12 + Math.random() * 0.1)
+    o.connect(g).connect(pn)
+    pn.connect(out); pn.connect(send)
+    o.start(now); o.stop(now + 0.35)
+    timer = window.setTimeout(blip, 120 + Math.random() * 520)
+  }
+  blip()
+  return () => { cancelled = true; clearTimeout(timer) }
+}
+
+/** Submerged water bed — heavily lowpassed noise with a slow swell. */
+function buildWater(c: AudioContext, out: GainNode, send: GainNode) {
+  const src = noiseSource(c)
+  const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.Q.value = 0.7
+  const body = c.createGain(); body.gain.value = 0.55
+  const pn = panner(c)
+  const lfo = c.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.07
+  const lfoG = c.createGain(); lfoG.gain.value = 160
+  lfo.connect(lfoG).connect(lp.frequency)
+  const amp = c.createOscillator(); amp.frequency.value = 0.05
+  const ampG = c.createGain(); ampG.gain.value = 0.16
+  amp.connect(ampG).connect(body.gain)
+  src.connect(lp).connect(body).connect(pn)
+  pn.connect(out); pn.connect(send)
+  src.start(); lfo.start(); amp.start()
+  const stopPan = autoPan(c, pn, 0.03, 0.3)
+  return () => { src.stop(); lfo.stop(); amp.stop(); stopPan() }
+}
+
+// ─── Sampled layers (recorded loops, lazy, with synth fallback) ─────────────
+
+const bufferCache = new Map<string, AudioBuffer>()
+const inflight = new Map<string, Promise<AudioBuffer | null>>()
+
+function decodeFromUrl(c: AudioContext, url: string): Promise<AudioBuffer | null> {
+  const cached = bufferCache.get(url)
+  if (cached) return Promise.resolve(cached)
+  let p = inflight.get(url)
+  if (!p) {
+    p = fetch(url)
+      .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+      .then(ab => c.decodeAudioData(ab))
+      .then(buf => { bufferCache.set(url, buf); return buf })
+      .catch(() => null)
+    inflight.set(url, p)
+  }
+  return p
+}
+
+async function loadFirst(c: AudioContext, urls: string[]): Promise<AudioBuffer | null> {
+  for (const url of urls) {
+    const buf = await decodeFromUrl(c, url)
+    if (buf) return buf
+  }
+  return null
+}
+
+interface SampleOpts {
+  gain?: number
+  /** submerged / muffled character — biquad lowpass cutoff in Hz */
+  lowpass?: number
+  rate?: number
+  pan?: number
+}
+
+/**
+ * A layer that prefers a recorded loop and falls back to a procedural
+ * builder if the clip is absent/undecodable. Plugs into the same (out, send)
+ * graph either way, so reverb + the analyser tap are unaffected.
+ */
+function sampleLayer(name: string, opts: SampleOpts, fallback: Builder): Builder {
+  return (c, out, send) => {
+    let cancelled = false
+    let srcNode: AudioBufferSourceNode | null = null
+    let fbStop: (() => void) | null = null
+    const base = import.meta.env.BASE_URL || '/'
+    const urls = [`${base}audio/${name}.ogg`, `${base}audio/${name}.m4a`]
+
+    loadFirst(c, urls).then(buf => {
+      if (cancelled) return
+      if (!buf) { fbStop = fallback(c, out, send); return } // graceful synth
+      const s = c.createBufferSource()
+      s.buffer = buf
+      s.loop = true
+      s.playbackRate.value = opts.rate ?? 1
+      let node: AudioNode = s
+      if (opts.lowpass) {
+        const lp = c.createBiquadFilter()
+        lp.type = 'lowpass'
+        lp.frequency.value = opts.lowpass
+        node.connect(lp)
+        node = lp
+      }
+      const g = c.createGain(); g.gain.value = opts.gain ?? 1
+      const pn = panner(c, opts.pan ?? 0)
+      node.connect(g).connect(pn)
+      pn.connect(out); pn.connect(send)
+      s.start()
+      srcNode = s
+    })
+
+    return () => {
+      cancelled = true
+      try { srcNode?.stop() } catch { /* not started */ }
+      fbStop?.()
+    }
+  }
+}
+
+const BUILDERS: Record<LayerId, Builder> = {
+  rain:     sampleLayer('rain',     { gain: 0.95 }, buildRain),
+  thunder:  sampleLayer('thunder',  { gain: 0.85 }, buildThunder),
+  wind:     sampleLayer('wind',     { gain: 0.85 }, buildWind),
+  tide:     sampleLayer('tide',     { gain: 0.95 }, buildTide),
+  fire:     sampleLayer('fire',     { gain: 0.95 }, buildFire),
+  crickets: sampleLayer('crickets', { gain: 0.85 }, buildCrickets),
+  harp:     sampleLayer('harp',     { gain: 0.7 },  buildHarp),
+  bubbles:  sampleLayer('bubbles',  { gain: 0.75, lowpass: 1400 }, buildBubbles),
+  water:    sampleLayer('water',    { gain: 0.9,  lowpass: 820 },  buildWater),
+  drone:    buildDrone,
 }
 
 // Per-layer reverb send amounts — how much "space" each lives in.
 const SEND: Record<LayerId, number> = {
   rain: 0.16, thunder: 0.5, wind: 0.22, tide: 0.34, fire: 0.12, drone: 0.4,
+  crickets: 0.2, harp: 0.52, bubbles: 0.3, water: 0.3,
 }
 
 // ─── Public API (unchanged) ────────────────────────────────────────────────

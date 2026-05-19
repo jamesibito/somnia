@@ -67,10 +67,34 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [x] Verified live on Tonight: all 4 render distinctly, no console errors,
       typecheck clean, prod build excludes the switcher.
 
-### Pass C.2 — Integration decision (deferred, do together)
-- Decide which concept(s) become real and on which screens / per-soundscape
-  (mirrors Pass C's palette work). Done on `main` after reviewing the
-  ideation branch. Leading candidate from review: `constellation`.
+## Pass C.2 — Per-soundscape particle identity  ✅ (branch: pass-c2-c3-soundscape-identity)
+- [x] 4 new concepts added: **embers** (Hearth), **fireflies** (Cedar
+      Forest), **bubbles** (Slow Tide + Underwater), **fairies** (Fairy
+      Forest). Plus motes/dust/starfield/constellation. Shared scaffolding.
+- [x] `concept` added to `SOUNDSCAPE_PALETTES`; `GenerativeField` takes a
+      `concept` prop. Precedence: dev override ?? per-soundscape ?? 'motes'.
+      Switcher gained an "auto" chip (clears override → per-soundscape).
+- [x] Map: rain→motes, cedar→fireflies, tide→bubbles, hearth→embers,
+      static→starfield, deep-drift→constellation, fairy→fairies,
+      underwater→bubbles(blue).
+
+## Pass C.3 — Hybrid audio + 2 new soundscapes  ✅
+- [x] `engine.ts` is now graceful-hybrid: `sampleLayer(name, opts, synth)`
+      prefers `/audio/<name>.ogg|.m4a`, **falls back to the original
+      procedural synth** if absent. Zero-regression: full synth today,
+      auto-upgrades when loops are dropped in. `drone` stays synth.
+- [x] New synth fallbacks authored: crickets, harp, bubbles, water.
+- [x] New soundscapes: **Fairy Forest** (crickets+harp+leaves+glow,
+      fairies particles) and **Underwater** (water+bubbles+pressure,
+      lowpass character, blue bubbles). Palettes added.
+- [x] `BRAND.md` Sound section revised to the hybrid rationale.
+- [ ] **TODO (user-reminded): swap CC0 placeholders → Pixabay loops.**
+      Needs a user-supplied Pixabay API key. CC0 sourcing from Commons was
+      too sparse/low-quality; engine runs on synth until loops are added.
+
+### Pass C-merge — decision (deferred, do together)
+- Review branches `pass-c1-particle-ideation` + `pass-c2-c3-soundscape-
+  identity`; decide what merges to `main`.
 
 ## Pass D — Ship the skins/themes (later)
 - Wire real Dusk Rose + Moonstone personalization themes (Profile theme picker
