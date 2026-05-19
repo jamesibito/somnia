@@ -21,8 +21,14 @@ export default function TabBar() {
         bottom: 0, left: 0, right: 0,
         zIndex: 70,
         paddingBottom: 26,
-        paddingTop: 12,
-        background: 'linear-gradient(to top, var(--color-bg) 55%, transparent)',
+        paddingTop: 18,
+        minHeight: 84,
+        // Opaque behind the icons; only a short feather at the very top, and a
+        // blur so anything scrolling under the feather is diffused, never
+        // legible (fixes the content-bleed / floating-navbar bug).
+        background: 'linear-gradient(to top, var(--color-bg) 0, var(--color-bg) 76%, transparent 100%)',
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'flex-end',

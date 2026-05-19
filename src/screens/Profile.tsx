@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, Download, Trash2, Shield, Moon, Bell, Volume2 } from 'lucide-react'
+import { ChevronRight, Download, Trash2, Shield, Moon, Bell, Volume2, Minus, Plus } from 'lucide-react'
 import { Screen, Eyebrow, Display, Hairline } from '../components/ui'
 import TabBar from '../components/TabBar'
 import SpiralMark from '../components/SpiralMark'
 import { USER } from '../data/content'
+import { usePlan } from '../context/PlanProvider'
+import { useSession } from '../context/SessionProvider'
+import { deriveStreak } from '../utils/insight'
+import { mergedSessions } from '../utils/sessions'
 
 const THEMES = [
   { id: 'indigo', name: 'Pure Indigo', sw: ['#0E0824', '#B5A8E8'], available: true },
@@ -12,18 +16,72 @@ const THEMES = [
   { id: 'moon', name: 'Moonstone', sw: ['#0E1226', '#D8DDF0'], available: false },
 ]
 
+function fmtClock(h: number, m: number) {
+  const ap = h >= 12 ? 'PM' : 'AM'
+  const hr = ((h + 11) % 12) + 1
+  return `${hr}:${String(m).padStart(2, '0')} ${ap}`
+}
+
 export default function Profile() {
   const navigate = useNavigate()
+  const { prefs, setPrefs } = usePlan()
+  const { history, reset: resetSessions } = useSession()
+  const streak = deriveStreak(mergedSessions(history), prefs)
+
   const [theme, setTheme] = useState('indigo')
   const [uiSounds, setUiSounds] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [bedtimeNudge, setBedtimeNudge] = useState(true)
+  const [editing, setEditing] = useState<null | 'bedtime' | 'goal'>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+  const toastTimer = useRef<number | null>(null)
+
+  const flash = (msg: string) => {
+    setToast(msg)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToast(null), 2800)
+  }
+
+  const shiftBedtime = (deltaMin: number) => {
+    const total = ((prefs.bedtimeHour * 60 + prefs.bedtimeMinute + deltaMin) % 1440 + 1440) % 1440
+    setPrefs({ bedtimeHour: Math.floor(total / 60), bedtimeMinute: total % 60 })
+  }
+  const shiftGoal = (delta: number) => {
+    setPrefs({ nightlyGoalHours: Math.min(9, Math.max(6, +(prefs.nightlyGoalHours + delta).toFixed(1))) })
+  }
+
+  const exportData = () => {
+    try {
+      const blob = new Blob([JSON.stringify({
+        exportedAt: new Date().toISOString(),
+        prefs: JSON.parse(localStorage.getItem('somnia.prefs.v1') || 'null'),
+        sessions: JSON.parse(localStorage.getItem('somnia.sessions.v1') || '[]'),
+      }, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'somnia-data.json'
+      a.click()
+      URL.revokeObjectURL(url)
+      flash('Exported somnia-data.json to your device.')
+    } catch {
+      flash('Export failed — nothing left this device.')
+    }
+  }
+
+  const deleteData = () => {
+    if (!confirmDelete) { setConfirmDelete(true); return }
+    resetSessions()
+    setConfirmDelete(false)
+    flash('All sleep data cleared. Tonight resets to a fresh start.')
+  }
 
   return (
     <>
       <Screen tabSafe>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <SpiralMark size={20} color="var(--color-text)" strokeWidth={1.4} />
+          <SpiralMark size={20} color="var(--color-text)" />
           <Eyebrow>Profile</Eyebrow>
         </header>
 
@@ -43,7 +101,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Streak band */}
+        {/* Streak band — live */}
         <div style={{
           marginTop: 22, padding: '16px 18px', borderRadius: 16,
           background: 'var(--color-surface)', border: '1px solid var(--color-hair)',
@@ -51,14 +109,16 @@ export default function Profile() {
         }}>
           <div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: 26, color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>
-              {USER.streak} nights
+              {streak.broken ? 'New start' : `${streak.count} nights`}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>in rhythm — your longest yet</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
+              {streak.broken ? 'begin again tonight' : 'in rhythm — nights you hit your bedtime'}
+            </div>
           </div>
-          <SpiralMark size={30} color="var(--color-accent)" strokeWidth={1.4} />
+          <SpiralMark size={30} color="var(--color-accent)" />
         </div>
 
-        {/* Personalization */}
+        {/* Appearance */}
         <SectionTitle>Appearance</SectionTitle>
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
           Pure Indigo is the default. Two alternate themes are in the works.
@@ -70,7 +130,7 @@ export default function Profile() {
               <button
                 key={t.id}
                 className="pressable"
-                onClick={() => t.available && setTheme(t.id)}
+                onClick={() => t.available ? setTheme(t.id) : flash(`${t.name} is coming in a later update.`)}
                 style={{
                   flex: 1, padding: 14, borderRadius: 16, textAlign: 'center',
                   background: 'var(--color-surface)',
@@ -90,24 +150,49 @@ export default function Profile() {
           })}
         </div>
 
-        <SettingToggle icon={<Volume2 size={16} />} label="UI sounds" sub="Off by default — silence is the respectful default" on={uiSounds} set={setUiSounds} />
-        <SettingToggle icon={<Moon size={16} />} label="Reduce motion" sub="Stills the drifting background" on={reduceMotion} set={setReduceMotion} />
-        <SettingToggle icon={<Bell size={16} />} label="Bedtime nudge" sub={`One notification at ${USER.bedtimeGoal}`} on={bedtimeNudge} set={setBedtimeNudge} last />
+        <SettingToggle icon={<Volume2 size={16} />} label="UI sounds" sub="Off by default — silence is the respectful default" on={uiSounds} set={v => { setUiSounds(v); flash(v ? 'UI sounds on.' : 'UI sounds off.') }} />
+        <SettingToggle icon={<Moon size={16} />} label="Reduce motion" sub="Stills the drifting background" on={reduceMotion} set={v => { setReduceMotion(v); flash(v ? 'Motion reduced.' : 'Motion restored.') }} />
+        <SettingToggle icon={<Bell size={16} />} label="Bedtime nudge" sub={`One notification at ${fmtClock(prefs.bedtimeHour, prefs.bedtimeMinute)}`} on={bedtimeNudge} set={v => { setBedtimeNudge(v); flash(v ? 'Bedtime nudge on.' : 'Bedtime nudge off.') }} last />
 
-        {/* Sleep goals */}
+        {/* Sleep goals — real, write to the plan */}
         <SectionTitle>Sleep goals</SectionTitle>
-        <NavRow label="Bedtime target" value={USER.bedtimeGoal} onClick={() => {}} />
+        <StepperRow
+          label="Bedtime target"
+          value={fmtClock(prefs.bedtimeHour, prefs.bedtimeMinute)}
+          open={editing === 'bedtime'}
+          onToggle={() => setEditing(editing === 'bedtime' ? null : 'bedtime')}
+          onMinus={() => shiftBedtime(-15)}
+          onPlus={() => shiftBedtime(15)}
+        />
         <NavRow label="Wake target" value={USER.wakeGoal} onClick={() => navigate('/alarm')} />
-        <NavRow label="Nightly goal" value={`${USER.sleepGoalHours} hours`} onClick={() => {}} last />
+        <StepperRow
+          label="Nightly goal"
+          value={`${prefs.nightlyGoalHours} hours`}
+          open={editing === 'goal'}
+          onToggle={() => setEditing(editing === 'goal' ? null : 'goal')}
+          onMinus={() => shiftGoal(-0.5)}
+          onPlus={() => shiftGoal(0.5)}
+          last
+        />
 
-        {/* Data & privacy */}
+        {/* Data & privacy — real behaviors */}
         <SectionTitle>Your data</SectionTitle>
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.55 }}>
           Sleep and dream data lives on your device. Nothing is sold, ever.
         </p>
-        <NavRow icon={<Shield size={15} />} label="Privacy & permissions" onClick={() => {}} />
-        <NavRow icon={<Download size={15} />} label="Export my data" sub=".json" onClick={() => {}} />
-        <NavRow icon={<Trash2 size={15} />} label="Delete all sleep data" destructive onClick={() => {}} last />
+        <NavRow
+          icon={<Shield size={15} />}
+          label="Privacy & permissions"
+          onClick={() => flash('Everything stays on this device. No account, no servers, no selling — ever.')}
+        />
+        <NavRow icon={<Download size={15} />} label="Export my data" sub=".json" onClick={exportData} />
+        <NavRow
+          icon={<Trash2 size={15} />}
+          label={confirmDelete ? 'Tap again to confirm' : 'Delete all sleep data'}
+          destructive
+          onClick={deleteData}
+          last
+        />
 
         <Hairline mt={30} mb={20} />
         <button
@@ -121,6 +206,28 @@ export default function Profile() {
           SOMNIA v0.1 · CONCEPT
         </p>
       </Screen>
+
+      {/* Transient confirmation */}
+      <div style={{
+        position: 'absolute', left: 20, right: 20, bottom: 104, zIndex: 75,
+        display: 'flex', justifyContent: 'center',
+        pointerEvents: 'none',
+        opacity: toast ? 1 : 0,
+        transform: toast ? 'translateY(0)' : 'translateY(8px)',
+        transition: 'opacity 240ms ease, transform 240ms ease',
+      }}>
+        <div style={{
+          maxWidth: '100%',
+          padding: '12px 18px', borderRadius: 999,
+          background: 'rgba(20,14,44,0.86)',
+          backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid var(--color-hair)',
+          fontSize: 12.5, color: 'var(--color-text)', textAlign: 'center', lineHeight: 1.4,
+        }}>
+          {toast}
+        </div>
+      </div>
+
       <TabBar />
     </>
   )
@@ -164,6 +271,52 @@ function SettingToggle({ icon, label, sub, on, set, last }: {
         }} />
       </button>
     </div>
+  )
+}
+
+function StepperRow({ label, value, open, onToggle, onMinus, onPlus, last }: {
+  label: string; value: string; open: boolean; onToggle: () => void
+  onMinus: () => void; onPlus: () => void; last?: boolean
+}) {
+  return (
+    <div style={{ borderBottom: last && !open ? 'none' : '1px solid var(--color-hair)' }}>
+      <button
+        className="pressable focusable"
+        onClick={onToggle}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '15px 0', textAlign: 'left' }}
+      >
+        <span style={{ flex: 1, fontSize: 15, color: 'var(--color-text)' }}>{label}</span>
+        <span style={{ fontSize: 14, color: open ? 'var(--color-accent)' : 'var(--color-text-muted)' }}>{value}</span>
+        <ChevronRight size={16} color="var(--color-text-faint)" style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 200ms ease' }} />
+      </button>
+      {open && (
+        <div className="rise" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 22, padding: '6px 0 18px' }}>
+          <StepBtn onClick={onMinus} aria="Decrease"><Minus size={16} /></StepBtn>
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 24, color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums', minWidth: 120, textAlign: 'center' }}>
+            {value}
+          </span>
+          <StepBtn onClick={onPlus} aria="Increase"><Plus size={16} /></StepBtn>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StepBtn({ children, onClick, aria }: { children: React.ReactNode; onClick: () => void; aria: string }) {
+  return (
+    <button
+      className="pressable focusable"
+      onClick={onClick}
+      aria-label={aria}
+      style={{
+        width: 40, height: 40, borderRadius: 20,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'var(--color-surface)', border: '1px solid var(--color-hair)',
+        color: 'var(--color-text)',
+      }}
+    >
+      {children}
+    </button>
   )
 }
 

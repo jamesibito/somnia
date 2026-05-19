@@ -118,7 +118,7 @@ export default function GoodMorning() {
                 border: '1px solid var(--color-hair)', textAlign: 'left', marginBottom: 14,
               }}
             >
-              <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 16, color: 'var(--color-text)' }}>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--color-text)' }}>
                 Remember a dream?
               </div>
               <div style={{ fontSize: 12.5, color: 'var(--color-text-muted)', marginTop: 4 }}>

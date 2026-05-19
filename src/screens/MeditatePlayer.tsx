@@ -174,7 +174,7 @@ export default function MeditatePlayer() {
             <button
               className="pressable focusable"
               onClick={() => navigate('/morning')}
-              style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: 'var(--color-accent)', fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}
+              style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: 'var(--color-accent)', fontFamily: 'var(--font-sans)', fontWeight: 600 }}
             >
               Practice complete — let the night carry on →
             </button>
@@ -182,7 +182,7 @@ export default function MeditatePlayer() {
             <button
               className="pressable focusable"
               onClick={() => navigate('/journal/new')}
-              style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: 'var(--color-accent)', fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}
+              style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: 'var(--color-accent)', fontFamily: 'var(--font-sans)', fontWeight: 600 }}
             >
               Practice complete — log a dream?
             </button>
