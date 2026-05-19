@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Pause, Play, SkipBack, SkipForward, Clock, X } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
+import GenerativeField from '../components/GenerativeField'
 import SpiralMark from '../components/SpiralMark'
 import { TopBar, Eyebrow } from '../components/ui'
 import { useAudio } from '../context/AudioProvider'
@@ -46,6 +47,7 @@ export default function SoundscapePlayer() {
   return (
     <div className="screen">
       <AtmosphereLayer variant="calm" grain={0.07} reactive />
+      <GenerativeField />
       {/* Reactive glow that strengthens while playing */}
       <div aria-hidden style={{
         position: 'absolute', top: '12%', left: '50%', transform: 'translateX(-50%)',

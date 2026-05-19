@@ -2,6 +2,7 @@ import type { ReactNode, CSSProperties } from 'react'
 import { ChevronLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import AtmosphereLayer from './AtmosphereLayer'
+import GenerativeField from './GenerativeField'
 
 /** Scrollable screen with atmosphere + entrance animation. */
 export function Screen({
@@ -10,16 +11,23 @@ export function Screen({
   grain = 0.06,
   pad = true,
   tabSafe = false,
+  field = false,
+  reactive = false,
 }: {
   children: ReactNode
   variant?: 'default' | 'deep' | 'dawn' | 'calm'
   grain?: number
   pad?: boolean
   tabSafe?: boolean
+  /** opt-in hand-rolled particle field (hero screens only) */
+  field?: boolean
+  /** opt-in audio-reactive atmosphere */
+  reactive?: boolean
 }) {
   return (
     <div className="screen">
-      <AtmosphereLayer variant={variant} grain={grain} />
+      <AtmosphereLayer variant={variant} grain={grain} reactive={reactive} />
+      {field && <GenerativeField />}
       <div
         className="screen-enter"
         style={{

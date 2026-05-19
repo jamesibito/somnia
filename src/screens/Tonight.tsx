@@ -23,7 +23,7 @@ export default function Tonight() {
 
   return (
     <>
-      <Screen tabSafe>
+      <Screen tabSafe field>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
           <SpiralMark size={22} color="var(--color-text)" strokeWidth={1.4} />
           <Eyebrow>Thu · 16 May</Eyebrow>
