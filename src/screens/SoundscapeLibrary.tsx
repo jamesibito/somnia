@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Screen, Eyebrow, Display } from '../components/ui'
 import TabBar from '../components/TabBar'
 import SpiralMark from '../components/SpiralMark'
-import { SOUNDSCAPES } from '../data/soundscapes'
+import { SOUNDSCAPES, getPalette } from '../data/soundscapes'
 import { useAudio } from '../context/AudioProvider'
 import { Play } from 'lucide-react'
 
@@ -26,6 +26,7 @@ export default function SoundscapeLibrary() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {SOUNDSCAPES.map((s, i) => {
             const active = current?.id === s.id
+            const pal = getPalette(s.id)
             return (
               <button
                 key={s.id}
@@ -42,7 +43,8 @@ export default function SoundscapeLibrary() {
               >
                 <div style={{
                   width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-                  background: `radial-gradient(circle at 30% 30%, rgba(155,118,255,0.5), rgba(98,72,200,0.25))`,
+                  background: `radial-gradient(circle at 30% 30%, ${pal.b1}, ${pal.b2})`,
+                  boxShadow: `inset 0 0 0 1px ${pal.tint}33`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   position: 'relative', overflow: 'hidden',
                 }}>

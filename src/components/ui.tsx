@@ -83,11 +83,11 @@ export function Eyebrow({ children, style }: { children: ReactNode; style?: CSSP
   return (
     <span style={{
       fontFamily: 'var(--font-mono)',
-      fontSize: 10,
+      fontSize: 10.5,
       lineHeight: 1,
-      letterSpacing: '0.24em',
+      letterSpacing: '0.22em',
       textTransform: 'uppercase',
-      color: 'var(--color-text-faint)',
+      color: 'var(--color-text-muted)',
       ...style,
     }}>
       {children}

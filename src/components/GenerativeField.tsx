@@ -9,11 +9,22 @@ import * as engine from '../audio/engine'
  * frame. Mounts behind the screen content (z-index 0, pointer-events none).
  */
 
-const COUNT = 96
-
 interface P { x: number; y: number; vx: number; vy: number; r: number; a: number }
 
-export default function GenerativeField() {
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '')
+  const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
+interface Props {
+  /** base mote colour — defaults to the Pure Indigo lavender */
+  tint?: string
+  /** particle count (knob for future density ideation) */
+  density?: number
+}
+
+export default function GenerativeField({ tint = '#BEB0FF', density = 96 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
@@ -24,18 +35,21 @@ export default function GenerativeField() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    const COUNT = Math.max(8, Math.round(density))
+    const [tr, tg, tb] = hexToRgb(tint)
     const dpr = Math.min(2, window.devicePixelRatio || 1)
     let W = 0, H = 0
 
-    // Pre-rendered soft mote sprite (radial gradient → cheap drawImage).
+    // Pre-rendered soft mote sprite (radial gradient → cheap drawImage),
+    // built from the soundscape's tint so each soundscape feels distinct.
     const SP = 64
     const sprite = document.createElement('canvas')
     sprite.width = sprite.height = SP
     const sctx = sprite.getContext('2d')!
     const g = sctx.createRadialGradient(SP / 2, SP / 2, 0, SP / 2, SP / 2, SP / 2)
-    g.addColorStop(0, 'rgba(190,176,255,0.9)')
-    g.addColorStop(0.35, 'rgba(155,124,232,0.45)')
-    g.addColorStop(1, 'rgba(120,90,210,0)')
+    g.addColorStop(0, `rgba(${tr},${tg},${tb},0.9)`)
+    g.addColorStop(0.35, `rgba(${tr},${tg},${tb},0.42)`)
+    g.addColorStop(1, `rgba(${tr},${tg},${tb},0)`)
     sctx.fillStyle = g
     sctx.fillRect(0, 0, SP, SP)
 
@@ -117,7 +131,7 @@ export default function GenerativeField() {
       if (raf) cancelAnimationFrame(raf)
       ro?.disconnect()
     }
-  }, [])
+  }, [tint, density])
 
   return (
     <canvas

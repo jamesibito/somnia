@@ -6,7 +6,7 @@ import GenerativeField from '../components/GenerativeField'
 import SpiralMark from '../components/SpiralMark'
 import { TopBar, Eyebrow } from '../components/ui'
 import { useAudio } from '../context/AudioProvider'
-import { getSoundscape, SOUNDSCAPES } from '../data/soundscapes'
+import { getSoundscape, getPalette, SOUNDSCAPES } from '../data/soundscapes'
 
 const TIMER_OPTS = [15, 30, 45, 60, 90]
 
@@ -15,6 +15,7 @@ export default function SoundscapePlayer() {
   const navigate = useNavigate()
   const audio = useAudio()
   const s = getSoundscape(id || '')
+  const pal = getPalette(s?.id)
   const [showTimer, setShowTimer] = useState(false)
 
   // Auto-start this soundscape if it isn't the current one.
@@ -46,8 +47,8 @@ export default function SoundscapePlayer() {
 
   return (
     <div className="screen">
-      <AtmosphereLayer variant="calm" grain={0.07} reactive />
-      <GenerativeField />
+      <AtmosphereLayer grain={0.07} reactive colors={pal} />
+      <GenerativeField tint={pal.tint} />
       {/* Reactive glow that strengthens while playing */}
       <div aria-hidden style={{
         position: 'absolute', top: '12%', left: '50%', transform: 'translateX(-50%)',

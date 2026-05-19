@@ -15,7 +15,7 @@ export default function Tonight() {
   const navigate = useNavigate()
   const { plan, prefs } = usePlan()
   const { history } = useSession()
-  const { greeting, setPhase } = useClock()
+  const { greeting, setPhase, atmosphereVariant } = useClock()
   useEffect(() => { setPhase('evening') }, [setPhase])
   const merged = mergedSessions(history)
   const ln = merged[merged.length - 1]
@@ -23,7 +23,7 @@ export default function Tonight() {
 
   return (
     <>
-      <Screen tabSafe field>
+      <Screen tabSafe field variant={atmosphereVariant}>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
           <SpiralMark size={22} color="var(--color-text)" strokeWidth={1.4} />
           <Eyebrow>Thu · 16 May</Eyebrow>
@@ -54,7 +54,7 @@ export default function Tonight() {
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
             <Eyebrow>Last night</Eyebrow>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--color-text-faint)', letterSpacing: '0.04em' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-muted)', letterSpacing: '0.03em' }}>
               {ln.bedtime} → {ln.wake}
             </span>
           </div>
@@ -141,9 +141,9 @@ export default function Tonight() {
 function Legend({ c, label, v }: { c: string; label: string; v: number }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ width: 5, height: 5, borderRadius: 3, background: c }} />
-      <span style={{ fontSize: 10.5, color: 'var(--color-text-faint)', letterSpacing: '0.02em' }}>{label}</span>
-      <span style={{ fontSize: 10.5, color: 'var(--color-text-muted)', fontVariantNumeric: 'tabular-nums' }}>{v}%</span>
+      <span style={{ width: 6, height: 6, borderRadius: 3, background: c }} />
+      <span style={{ fontSize: 11, color: 'var(--color-text-muted)', letterSpacing: '0.02em' }}>{label}</span>
+      <span style={{ fontSize: 11, color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>{v}%</span>
     </div>
   )
 }

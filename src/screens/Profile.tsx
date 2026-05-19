@@ -4,6 +4,7 @@ import { ChevronRight, Download, Trash2, Shield, Moon, Bell, Volume2, Minus, Plu
 import { Screen, Eyebrow, Display, Hairline } from '../components/ui'
 import TabBar from '../components/TabBar'
 import SpiralMark from '../components/SpiralMark'
+import Wordmark from '../components/Wordmark'
 import { USER } from '../data/content'
 import { usePlan } from '../context/PlanProvider'
 import { useSession } from '../context/SessionProvider'
@@ -202,9 +203,46 @@ export default function Profile() {
         >
           Sign out
         </button>
-        <p style={{ textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)', marginTop: 18, letterSpacing: '0.1em' }}>
-          SOMNIA v0.1 · CONCEPT
-        </p>
+        {/* Colophon */}
+        <div style={{
+          marginTop: 30, paddingTop: 26, borderTop: '1px solid var(--color-hair)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: 0.85 }}>
+            <SpiralMark size={26} color="var(--color-text-muted)" />
+            <Wordmark height={17} color="var(--color-text-muted)" />
+          </div>
+          <p style={{
+            fontFamily: 'var(--font-serif)', fontSize: 14, color: 'var(--color-text-muted)',
+            textAlign: 'center', lineHeight: 1.5, maxWidth: 260,
+          }}>
+            A brand &amp; app concept by James Ibitoye.
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-faint)', textAlign: 'center', lineHeight: 1.6, maxWidth: 280 }}>
+            Started as a 2D-Visualization brand project, evolved into a sleep,
+            meditation &amp; white-noise product concept.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 4 }}>
+            <a
+              href="https://jamesibitoye.framer.website" target="_blank" rel="noopener noreferrer"
+              className="pressable focusable"
+              style={{ fontSize: 12.5, color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: 5 }}
+            >
+              Portfolio <span style={{ fontSize: 11 }}>↗</span>
+            </a>
+            <span style={{ width: 1, height: 12, background: 'var(--color-hair)' }} />
+            <a
+              href="https://github.com/jamesibito/somnia" target="_blank" rel="noopener noreferrer"
+              className="pressable focusable"
+              style={{ fontSize: 12.5, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}
+            >
+              Source <span style={{ fontSize: 11 }}>↗</span>
+            </a>
+          </div>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)', marginTop: 6, letterSpacing: '0.14em' }}>
+            SOMNIA · v0.3 · CONCEPT
+          </p>
+        </div>
       </Screen>
 
       {/* Transient confirmation */}

@@ -40,9 +40,23 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - Note: this was a focused editorial pass, not a full restyle. Deeper
   type-scale tokenization left for a future pass if desired.
 
-## Pass C — Per-soundscape visuals + colour (later)
-- Distinct atmosphere/particle palette per soundscape (rain vs tide vs fire vs
-  drone); phase-driven colour shifts.
+## Pass C — Per-soundscape visuals + colour  ✅ done (commit + push)
+- [x] SOUNDSCAPE_PALETTES map (6 in-family but distinct moods); AtmosphereLayer
+      gains a `colors` override, GenerativeField gains `tint` + `density` knobs.
+- [x] Soundscape player: atmosphere + motes now palette-match the soundscape
+      (verified Slow Tide cool-blue vs Hearth warm-dusk).
+- [x] Library: each card's icon accent derives from its soundscape palette.
+- [x] Phase colour: Tonight now uses the clock's atmosphere variant
+      (evening→calm, dawn/morning→dawn).
+- [x] Fixed Pass-B visibility regression (Eyebrow/legend/timestamps were too
+      faint on the dashboard → back to readable `--color-text-muted`).
+- [x] Profile colophon: full logo lockup, "A brand & app concept by James
+      Ibitoye", origin line, Portfolio + Source links, SOMNIA · v0.3 · CONCEPT.
+
+## Pass C.1 — Particle ideation (NEXT, user-requested)
+- Explore particle-effect visions: sparser/denser, different particle kind,
+  alternative style concepts entirely. `GenerativeField` already has
+  `density` + `tint` knobs to make this fast to iterate.
 
 ## Pass D — Ship the skins/themes (later)
 - Wire real Dusk Rose + Moonstone personalization themes (Profile theme picker

@@ -15,6 +15,8 @@ interface Props {
   variant?: 'default' | 'deep' | 'dawn' | 'calm'
   grain?: number
   reactive?: boolean
+  /** Per-soundscape override — wins over `variant` when provided. */
+  colors?: { b1: string; b2: string; b3: string }
 }
 
 const VARIANTS = {
@@ -49,8 +51,8 @@ function useAmplitudeVar(enabled: boolean) {
   }, [enabled])
 }
 
-export default function AtmosphereLayer({ variant = 'default', grain = 0.06, reactive = false }: Props) {
-  const v = VARIANTS[variant]
+export default function AtmosphereLayer({ variant = 'default', grain = 0.06, reactive = false, colors }: Props) {
+  const v = colors ?? VARIANTS[variant]
   useAmplitudeVar(reactive)
 
   // Only attach the amplitude-driven transform when reactive, so the ~12
