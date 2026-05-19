@@ -48,7 +48,7 @@ export default function SoundscapePlayer() {
   return (
     <div className="screen">
       <AtmosphereLayer grain={0.07} reactive colors={pal} />
-      <GenerativeField tint={pal.tint} />
+      <GenerativeField tint={pal.tint} concept={pal.concept} />
       {/* Reactive glow that strengthens while playing */}
       <div aria-hidden style={{
         position: 'absolute', top: '12%', left: '50%', transform: 'translateX(-50%)',

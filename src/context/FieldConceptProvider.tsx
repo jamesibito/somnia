@@ -1,45 +1,50 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 
 /**
- * FieldConceptProvider — ideation harness state for Pass C.1.
+ * FieldConceptProvider — ideation + override harness for the particle field.
  *
- * Holds the active particle concept + a density override so the dev-only
- * FieldConceptSwitcher can compare GenerativeField treatments live. Persisted
- * to localStorage so reloads keep the selection. GenerativeField falls back to
- * the 'motes' default if no provider is mounted, so the component stays
- * self-contained and production behavior is unchanged.
+ * Each soundscape now declares its own particle concept (see SoundscapePalette
+ * in data/soundscapes.ts), passed to GenerativeField as the `concept` prop.
+ * This provider holds an optional *dev override* that wins over the
+ * per-soundscape default so the dev-only switcher can audition any concept on
+ * any screen. `override: null` → the per-soundscape default is used.
+ *
+ * Precedence in GenerativeField: override ?? per-soundscape prop ?? 'motes'.
+ * GenerativeField also reads safely with no provider mounted (production-safe).
  */
 
-export const FIELD_CONCEPTS = ['motes', 'dust', 'starfield', 'constellation'] as const
+export const FIELD_CONCEPTS = [
+  'motes', 'dust', 'starfield', 'constellation',
+  'embers', 'fireflies', 'bubbles', 'fairies',
+] as const
 export type FieldConcept = (typeof FIELD_CONCEPTS)[number]
 
 interface FieldConceptState {
-  concept: FieldConcept
+  /** dev override; null → use the per-soundscape default */
+  override: FieldConcept | null
   /** null → each call site keeps its own density; number → global override */
   densityOverride: number | null
-  setConcept: (c: FieldConcept) => void
-  cycleConcept: () => void
+  setOverride: (c: FieldConcept | null) => void
   setDensityOverride: (d: number | null) => void
 }
 
-const KEY = 'somnia.fieldConcept.v1'
+const KEY = 'somnia.fieldConcept.v2'
 
 const Ctx = createContext<FieldConceptState | null>(null)
 
-/** Safe read — returns 'motes' default when no provider is mounted. */
+/** Safe read — no-op defaults when no provider is mounted. */
 export function useFieldConcept(): FieldConceptState {
   const c = useContext(Ctx)
   if (c) return c
   return {
-    concept: 'motes',
+    override: null,
     densityOverride: null,
-    setConcept: () => {},
-    cycleConcept: () => {},
+    setOverride: () => {},
     setDensityOverride: () => {},
   }
 }
 
-interface Persisted { concept: FieldConcept; densityOverride: number | null }
+interface Persisted { override: FieldConcept | null; densityOverride: number | null }
 
 export function FieldConceptProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<Persisted>(() => {
@@ -47,27 +52,19 @@ export function FieldConceptProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem(KEY)
       if (raw) {
         const p = JSON.parse(raw) as Partial<Persisted>
-        if (p.concept && FIELD_CONCEPTS.includes(p.concept)) {
-          return { concept: p.concept, densityOverride: p.densityOverride ?? null }
-        }
+        const ov = p.override && FIELD_CONCEPTS.includes(p.override) ? p.override : null
+        return { override: ov, densityOverride: p.densityOverride ?? null }
       }
     } catch { /* ignore */ }
-    return { concept: 'motes', densityOverride: null }
+    return { override: null, densityOverride: null }
   })
 
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify(state)) } catch { /* ignore */ }
   }, [state])
 
-  const setConcept = useCallback((concept: FieldConcept) => {
-    setState(prev => ({ ...prev, concept }))
-  }, [])
-
-  const cycleConcept = useCallback(() => {
-    setState(prev => {
-      const i = FIELD_CONCEPTS.indexOf(prev.concept)
-      return { ...prev, concept: FIELD_CONCEPTS[(i + 1) % FIELD_CONCEPTS.length] }
-    })
+  const setOverride = useCallback((override: FieldConcept | null) => {
+    setState(prev => ({ ...prev, override }))
   }, [])
 
   const setDensityOverride = useCallback((densityOverride: number | null) => {
@@ -77,10 +74,9 @@ export function FieldConceptProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider
       value={{
-        concept: state.concept,
+        override: state.override,
         densityOverride: state.densityOverride,
-        setConcept,
-        cycleConcept,
+        setOverride,
         setDensityOverride,
       }}
     >

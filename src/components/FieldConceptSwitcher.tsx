@@ -14,7 +14,7 @@ export default function FieldConceptSwitcher() {
 }
 
 function Panel() {
-  const { concept, densityOverride, setConcept, setDensityOverride } = useFieldConcept()
+  const { override, densityOverride, setOverride, setDensityOverride } = useFieldConcept()
 
   const wrap: React.CSSProperties = {
     position: 'fixed', left: 16, bottom: 16, zIndex: 9999,
@@ -47,10 +47,13 @@ function Panel() {
 
   return (
     <div style={wrap} aria-label="Particle concept ideation (dev)">
-      <span style={label}>field concept · dev</span>
+      <span style={label}>field concept · dev override</span>
       <div style={row}>
+        <button style={chip(override === null)} onClick={() => setOverride(null)}>
+          auto
+        </button>
         {FIELD_CONCEPTS.map(c => (
-          <button key={c} style={chip(c === concept)} onClick={() => setConcept(c)}>
+          <button key={c} style={chip(c === override)} onClick={() => setOverride(c)}>
             {c}
           </button>
         ))}

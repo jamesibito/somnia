@@ -8,16 +8,16 @@ import { useFieldConcept, type FieldConcept } from '../context/FieldConceptProvi
  * paused when the tab is hidden, capped DPR. Reduced-motion → one static
  * frame. Mounts behind the screen content (z-index 0, pointer-events none).
  *
- * Pass C.1 ideation: the particle *kind* is selectable via FieldConcept
- * (motes | dust | starfield | constellation). The active concept comes from
- * FieldConceptProvider; absent a provider it defaults to 'motes', so the
- * existing two call sites and the production build are byte-identical to
- * before until the dev-only switcher overrides it.
+ * Each soundscape declares its own particle `concept` (passed as a prop).
+ * A dev-only override (FieldConceptProvider) wins for auditioning:
+ *   effective concept = override ?? concept prop ?? 'motes'.
+ * Absent a provider it falls back to the prop / 'motes', so the production
+ * build and the existing hero-screen call site are unaffected.
  */
 
 interface P {
   x: number; y: number; vx: number; vy: number; r: number; a: number
-  /** per-particle phase — drives dust sway + starfield twinkle */
+  /** per-particle phase — drives sway / twinkle / flicker / blink */
   ph: number
 }
 
@@ -32,6 +32,8 @@ interface Props {
   tint?: string
   /** particle count baseline (scaled per concept) */
   density?: number
+  /** per-soundscape particle identity; dev override still wins */
+  concept?: FieldConcept
 }
 
 /** Per-concept density scale relative to the call site's `density` baseline. */
@@ -40,11 +42,16 @@ const DENSITY_SCALE: Record<FieldConcept, number> = {
   dust: 0.36,
   starfield: 1.7,
   constellation: 0.28,
+  embers: 0.7,
+  fireflies: 0.16,
+  bubbles: 0.42,
+  fairies: 0.22,
 }
 
-export default function GenerativeField({ tint = '#BEB0FF', density = 96 }: Props) {
+export default function GenerativeField({ tint = '#BEB0FF', density = 96, concept = 'motes' }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const { concept, densityOverride } = useFieldConcept()
+  const { override, densityOverride } = useFieldConcept()
+  const activeConcept: FieldConcept = override ?? concept
   const baseDensity = densityOverride ?? density
 
   useEffect(() => {
@@ -55,7 +62,7 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96 }: Prop
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const COUNT = Math.max(8, Math.round(baseDensity * DENSITY_SCALE[concept]))
+    const COUNT = Math.max(8, Math.round(baseDensity * DENSITY_SCALE[activeConcept]))
     const [tr, tg, tb] = hexToRgb(tint)
     const dpr = Math.min(2, window.devicePixelRatio || 1)
     let W = 0, H = 0
@@ -78,41 +85,72 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96 }: Prop
       particles.length = 0
       for (let i = 0; i < COUNT; i++) {
         const ph = Math.random() * Math.PI * 2
-        if (concept === 'motes') {
-          particles.push({
-            x: Math.random() * W, y: Math.random() * H,
-            vx: (Math.random() - 0.5) * 0.12,
-            vy: -0.08 - Math.random() * 0.22,
-            r: 6 + Math.random() * 26,
-            a: 0.12 + Math.random() * 0.3, ph,
-          })
-        } else if (concept === 'dust') {
-          // sparse, large, near-still — the calmest treatment
-          particles.push({
-            x: Math.random() * W, y: Math.random() * H,
-            vx: 0,
-            vy: -0.015 - Math.random() * 0.03,
-            r: 22 + Math.random() * 44,
-            a: 0.07 + Math.random() * 0.13, ph,
-          })
-        } else if (concept === 'starfield') {
-          // many tiny faint near-static points that slowly twinkle
-          particles.push({
-            x: Math.random() * W, y: Math.random() * H,
-            vx: 0,
-            vy: -0.006 - Math.random() * 0.012,
-            r: 0.7 + Math.random() * 1.7,
-            a: 0.25 + Math.random() * 0.5, ph,
-          })
-        } else {
-          // constellation — sparse drifting nodes; links drawn in draw()
-          particles.push({
-            x: Math.random() * W, y: Math.random() * H,
-            vx: (Math.random() - 0.5) * 0.06,
-            vy: (Math.random() - 0.5) * 0.06,
-            r: 1.6 + Math.random() * 2.2,
-            a: 0.5 + Math.random() * 0.4, ph,
-          })
+        switch (activeConcept) {
+          case 'motes':
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: (Math.random() - 0.5) * 0.12,
+              vy: -0.08 - Math.random() * 0.22,
+              r: 6 + Math.random() * 26,
+              a: 0.12 + Math.random() * 0.3, ph,
+            }); break
+          case 'dust':
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: 0, vy: -0.015 - Math.random() * 0.03,
+              r: 22 + Math.random() * 44,
+              a: 0.07 + Math.random() * 0.13, ph,
+            }); break
+          case 'starfield':
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: 0, vy: -0.006 - Math.random() * 0.012,
+              r: 0.7 + Math.random() * 1.7,
+              a: 0.25 + Math.random() * 0.5, ph,
+            }); break
+          case 'constellation':
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: (Math.random() - 0.5) * 0.06,
+              vy: (Math.random() - 0.5) * 0.06,
+              r: 1.6 + Math.random() * 2.2,
+              a: 0.5 + Math.random() * 0.4, ph,
+            }); break
+          case 'embers':
+            // warm sparks rising off a low fire — small, fast, flickering
+            particles.push({
+              x: Math.random() * W, y: H * 0.5 + Math.random() * H * 0.6,
+              vx: (Math.random() - 0.5) * 0.16,
+              vy: -0.35 - Math.random() * 0.75,
+              r: 1.6 + Math.random() * 4.5,
+              a: 0.35 + Math.random() * 0.45, ph,
+            }); break
+          case 'fireflies':
+            // sparse wanderers that blink slowly on and off
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: (Math.random() - 0.5) * 0.05,
+              vy: (Math.random() - 0.5) * 0.05,
+              r: 2.4 + Math.random() * 3,
+              a: 0.6 + Math.random() * 0.4, ph,
+            }); break
+          case 'bubbles':
+            // rising bubbles, wobbling, popping near the surface
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: 0, vy: -0.22 - Math.random() * 0.4,
+              r: 3 + Math.random() * 13,
+              a: 0.18 + Math.random() * 0.3, ph,
+            }); break
+          case 'fairies':
+            // slow drifting twinkles with a soft comet trail
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: (Math.random() - 0.5) * 0.22,
+              vy: (Math.random() - 0.5) * 0.22,
+              r: 2.2 + Math.random() * 3.4,
+              a: 0.55 + Math.random() * 0.4, ph,
+            }); break
         }
       }
     }
@@ -141,7 +179,7 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96 }: Prop
       ctx.globalCompositeOperation = 'lighter'
       const boost = 1 + amp * 0.8
 
-      if (concept === 'constellation') {
+      if (activeConcept === 'constellation') {
         const LINK = Math.min(W, H) * 0.24
         const LINK2 = LINK * LINK
         ctx.lineWidth = 1
@@ -161,19 +199,48 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96 }: Prop
             ctx.stroke()
           }
         }
-        for (const p of particles) {
-          blob(p.x, p.y, p.r * 2.4 * boost, p.a * (0.6 + amp * 0.5))
-        }
-      } else if (concept === 'starfield') {
+        for (const p of particles) blob(p.x, p.y, p.r * 2.4 * boost, p.a * (0.6 + amp * 0.5))
+      } else if (activeConcept === 'starfield') {
         for (const p of particles) {
           const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * 0.04 + p.ph))
           blob(p.x, p.y, (p.r + 1.2) * boost, p.a * tw * (0.7 + amp * 0.5))
         }
+      } else if (activeConcept === 'embers') {
+        for (const p of particles) {
+          const fl = 0.55 + 0.45 * Math.sin(t * 0.5 + p.ph) // fast flicker
+          // life fade: dimmer the higher it has risen
+          const life = Math.max(0, Math.min(1, p.y / H))
+          blob(p.x, p.y, (p.r + 1) * boost, p.a * fl * (0.4 + life * 0.7) * (0.7 + amp * 0.6))
+        }
+      } else if (activeConcept === 'fireflies') {
+        for (const p of particles) {
+          // slow asymmetric blink: long dark, short bright
+          const s = Math.sin(t * 0.018 + p.ph)
+          const glow = s > 0.4 ? (s - 0.4) / 0.6 : 0
+          if (glow <= 0) continue
+          blob(p.x, p.y, (p.r + 2) * boost, p.a * glow * (0.8 + amp * 0.4))
+        }
+      } else if (activeConcept === 'bubbles') {
+        for (const p of particles) {
+          const life = Math.max(0, Math.min(1, p.y / (H * 0.9)))
+          const fade = life < 0.12 ? life / 0.12 : 1 // pop/fade near surface
+          // soft body + a brighter rim core for a "bubble" read
+          blob(p.x, p.y, p.r * boost, p.a * fade * 0.6 * (0.7 + amp * 0.4))
+          blob(p.x - p.r * 0.28, p.y - p.r * 0.28, p.r * 0.42 * boost, p.a * fade * (0.9 + amp * 0.4))
+        }
+      } else if (activeConcept === 'fairies') {
+        for (const p of particles) {
+          const tw = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(t * 0.06 + p.ph))
+          // short comet trail opposite velocity (cheap: 3 fading echoes)
+          for (let k = 3; k >= 1; k--) {
+            blob(p.x - p.vx * k * 9, p.y - p.vy * k * 9,
+                 p.r * (1 - k * 0.18) * boost, p.a * tw * (0.12 / k))
+          }
+          blob(p.x, p.y, (p.r + 1) * boost, p.a * tw * (0.85 + amp * 0.4))
+        }
       } else {
         // motes + dust share the soft-blob draw
-        for (const p of particles) {
-          blob(p.x, p.y, p.r * boost, p.a * (0.7 + amp * 0.5))
-        }
+        for (const p of particles) blob(p.x, p.y, p.r * boost, p.a * (0.7 + amp * 0.5))
       }
 
       ctx.globalAlpha = 1
@@ -184,19 +251,44 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96 }: Prop
       t += 1
       const sp = 1 + amp * 1.4
       for (const p of particles) {
-        if (concept === 'dust') {
-          // gentle horizontal sway instead of linear vx
-          p.x += Math.sin(t * 0.005 + p.ph) * 0.06
-          p.y += p.vy * sp
-        } else {
-          p.x += p.vx * sp
-          p.y += p.vy * sp
+        switch (activeConcept) {
+          case 'dust':
+            p.x += Math.sin(t * 0.005 + p.ph) * 0.06
+            p.y += p.vy * sp
+            break
+          case 'embers':
+            // curl + accelerate slightly as they rise
+            p.x += (p.vx + Math.sin(t * 0.02 + p.ph) * 0.12) * sp
+            p.y += p.vy * sp
+            break
+          case 'fireflies':
+            p.x += (p.vx + Math.sin(t * 0.01 + p.ph) * 0.06) * sp
+            p.y += (p.vy + Math.cos(t * 0.009 + p.ph * 1.3) * 0.05) * sp
+            break
+          case 'bubbles':
+            p.x += Math.sin(t * 0.03 + p.ph) * 0.5 // wobble
+            p.y += p.vy * sp
+            break
+          case 'fairies':
+            p.x += (p.vx + Math.sin(t * 0.013 + p.ph) * 0.14) * sp
+            p.y += (p.vy + Math.cos(t * 0.011 + p.ph) * 0.14) * sp
+            break
+          default:
+            p.x += p.vx * sp
+            p.y += p.vy * sp
         }
-        if (concept === 'constellation') {
+
+        if (activeConcept === 'constellation' || activeConcept === 'fireflies' || activeConcept === 'fairies') {
+          // wrap on all edges (free wander)
           if (p.x < -40) p.x = W + 40
           else if (p.x > W + 40) p.x = -40
           if (p.y < -40) p.y = H + 40
           else if (p.y > H + 40) p.y = -40
+        } else if (activeConcept === 'embers' || activeConcept === 'bubbles') {
+          // respawn at the bottom once they reach the top
+          if (p.y < -20) { p.y = H + 20; p.x = Math.random() * W }
+          if (p.x < -40) p.x = W + 40
+          else if (p.x > W + 40) p.x = -40
         } else {
           if (p.y < -40) { p.y = H + 40; p.x = Math.random() * W }
           if (p.x < -40) p.x = W + 40
@@ -232,7 +324,7 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96 }: Prop
       if (raf) cancelAnimationFrame(raf)
       ro?.disconnect()
     }
-  }, [tint, baseDensity, concept])
+  }, [tint, baseDensity, activeConcept])
 
   return (
     <canvas
