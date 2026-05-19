@@ -53,10 +53,24 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [x] Profile colophon: full logo lockup, "A brand & app concept by James
       Ibitoye", origin line, Portfolio + Source links, SOMNIA · v0.3 · CONCEPT.
 
-## Pass C.1 — Particle ideation (NEXT, user-requested)
-- Explore particle-effect visions: sparser/denser, different particle kind,
-  alternative style concepts entirely. `GenerativeField` already has
-  `density` + `tint` knobs to make this fast to iterate.
+## Pass C.1 — Particle ideation  ✅ ideation done (branch: pass-c1-particle-ideation)
+- [x] `GenerativeField` now carries a selectable `concept` (4 in-brand
+      treatments): **motes** (current baseline), **dust** (sparse/calmest),
+      **starfield** (tiny twinkling night-sky), **constellation** (sparse
+      nodes + faint proximity links, amplitude-brightened — the "designed"
+      signature). All share the single-rAF / sprite / reduced-motion /
+      tab-hidden / DPR scaffolding; default stays `motes` so prod is
+      unchanged.
+- [x] `FieldConceptProvider` (localStorage-persisted) + dev-only
+      `FieldConceptSwitcher` (gated by `import.meta.env.DEV`, verified
+      tree-shaken from `npm run build`). Existing call sites untouched.
+- [x] Verified live on Tonight: all 4 render distinctly, no console errors,
+      typecheck clean, prod build excludes the switcher.
+
+### Pass C.2 — Integration decision (deferred, do together)
+- Decide which concept(s) become real and on which screens / per-soundscape
+  (mirrors Pass C's palette work). Done on `main` after reviewing the
+  ideation branch. Leading candidate from review: `constellation`.
 
 ## Pass D — Ship the skins/themes (later)
 - Wire real Dusk Rose + Moonstone personalization themes (Profile theme picker

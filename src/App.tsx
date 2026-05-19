@@ -6,6 +6,8 @@ import { JournalProvider } from './context/JournalProvider'
 import { PlanProvider } from './context/PlanProvider'
 import { SessionProvider } from './context/SessionProvider'
 import { ClockProvider } from './context/ClockProvider'
+import { FieldConceptProvider } from './context/FieldConceptProvider'
+import FieldConceptSwitcher from './components/FieldConceptSwitcher'
 
 import Splash from './screens/Splash'
 import Onboarding from './screens/Onboarding'
@@ -39,8 +41,10 @@ export default function App() {
         <SessionProvider>
         <ClockProvider>
         <JournalProvider>
+        <FieldConceptProvider>
           <PhoneFrame>
             <ScrollReset />
+            <FieldConceptSwitcher />
             <Routes>
               <Route path="/" element={<Splash />} />
               <Route path="/onboarding" element={<Onboarding />} />
@@ -59,6 +63,7 @@ export default function App() {
               <Route path="/profile" element={<Profile />} />
             </Routes>
           </PhoneFrame>
+        </FieldConceptProvider>
         </JournalProvider>
         </ClockProvider>
         </SessionProvider>
