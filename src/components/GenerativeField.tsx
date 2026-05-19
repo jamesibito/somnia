@@ -39,11 +39,11 @@ interface Props {
 /** Per-concept density scale relative to the call site's `density` baseline. */
 const DENSITY_SCALE: Record<FieldConcept, number> = {
   motes: 1,
-  dust: 0.36,
+  dust: 0.5,
   starfield: 1.7,
   constellation: 0.28,
   embers: 0.7,
-  fireflies: 0.16,
+  fireflies: 0.28,
   bubbles: 0.42,
   fairies: 0.22,
 }
@@ -98,8 +98,8 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             particles.push({
               x: Math.random() * W, y: Math.random() * H,
               vx: 0, vy: -0.015 - Math.random() * 0.03,
-              r: 22 + Math.random() * 44,
-              a: 0.07 + Math.random() * 0.13, ph,
+              r: 20 + Math.random() * 40,
+              a: 0.13 + Math.random() * 0.2, ph,
             }); break
           case 'starfield':
             particles.push({
@@ -214,11 +214,11 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
         }
       } else if (activeConcept === 'fireflies') {
         for (const p of particles) {
-          // slow asymmetric blink: long dark, short bright
-          const s = Math.sin(t * 0.018 + p.ph)
-          const glow = s > 0.4 ? (s - 0.4) / 0.6 : 0
-          if (glow <= 0) continue
-          blob(p.x, p.y, (p.r + 2) * boost, p.a * glow * (0.8 + amp * 0.4))
+          // gentle breathing glow with a brighter pulse — never fully dark,
+          // so the forest always reads as alive
+          const s = Math.sin(t * 0.02 + p.ph)
+          const glow = 0.28 + 0.72 * Math.max(0, (s + 0.2) / 1.2)
+          blob(p.x, p.y, (p.r + 2.4) * boost, p.a * glow * (0.85 + amp * 0.4))
         }
       } else if (activeConcept === 'bubbles') {
         for (const p of particles) {

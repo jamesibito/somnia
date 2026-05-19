@@ -25,6 +25,43 @@
   --color-positive: #9FE8C4;
 }
 
+/* ─── Dusk Rose — warm opt-in personalization theme ─── */
+[data-theme="dusk"] {
+  --color-bg: #150F26;
+  --color-bg-deep: #100A1F;
+  --color-surface: #1E1430;
+  --color-surface-2: #271A3D;
+  --color-accent: #E3B6C4;
+  --color-accent-bright: #F2CCD6;
+  --color-accent-dim: #C98FA8;
+  --color-accent-ink: #1A0E18;
+  --color-text: #F3E6EC;
+  --color-text-muted: #B59AAA;
+  --color-text-faint: #806979;
+  --color-hair: #2C2038;
+  /* warn shifts to amber so alerts still read against the rose field */
+  --color-warn: #E8C6A0;
+  --color-positive: #B6E2C2;
+}
+
+/* ─── Moonstone — cold opt-in personalization theme ─── */
+[data-theme="moon"] {
+  --color-bg: #0E1226;
+  --color-bg-deep: #0A0E1F;
+  --color-surface: #161B33;
+  --color-surface-2: #1E2440;
+  --color-accent: #C7D2EC;
+  --color-accent-bright: #DCE4F5;
+  --color-accent-dim: #9FB0D8;
+  --color-accent-ink: #0A0F1C;
+  --color-text: #E8ECF8;
+  --color-text-muted: #97A2C0;
+  --color-text-faint: #67708C;
+  --color-hair: #1F2540;
+  --color-warn: #E8B8C0;
+  --color-positive: #9FE8C4;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;

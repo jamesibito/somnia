@@ -22,6 +22,8 @@ export interface Prefs {
   /** minutes the morning insight shifted bedtime earlier (+) — closes the loop */
   bedtimeAdjustMin: number
   onboarded: boolean
+  /** opt-in personalization theme; 'indigo' is the default Pure Indigo */
+  theme: 'indigo' | 'dusk' | 'moon'
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -34,6 +36,7 @@ const DEFAULT_PREFS: Prefs = {
   nightlyGoalHours: 7.5,
   bedtimeAdjustMin: 0,
   onboarded: false,
+  theme: 'indigo',
 }
 
 const KEY = 'somnia.prefs.v1'
@@ -116,6 +119,13 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify(prefs)) } catch { /* ignore */ }
   }, [prefs])
+
+  // Apply the personalization theme app-wide (CSS-var swap on the root).
+  useEffect(() => {
+    const root = document.documentElement
+    if (prefs.theme && prefs.theme !== 'indigo') root.setAttribute('data-theme', prefs.theme)
+    else root.removeAttribute('data-theme')
+  }, [prefs.theme])
 
   const setPrefs = useCallback((patch: Partial<Prefs>) => {
     setPrefsState(prev => ({ ...prev, ...patch }))

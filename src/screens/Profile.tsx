@@ -12,10 +12,10 @@ import { deriveStreak } from '../utils/insight'
 import { mergedSessions } from '../utils/sessions'
 
 const THEMES = [
-  { id: 'indigo', name: 'Pure Indigo', sw: ['#0E0824', '#B5A8E8'], available: true },
-  { id: 'dusk', name: 'Dusk Rose', sw: ['#150F26', '#E8B8C0'], available: false },
-  { id: 'moon', name: 'Moonstone', sw: ['#0E1226', '#D8DDF0'], available: false },
-]
+  { id: 'indigo', name: 'Pure Indigo', sw: ['#0E0824', '#B5A8E8'] },
+  { id: 'dusk', name: 'Dusk Rose', sw: ['#150F26', '#E3B6C4'] },
+  { id: 'moon', name: 'Moonstone', sw: ['#0E1226', '#C7D2EC'] },
+] as const
 
 function fmtClock(h: number, m: number) {
   const ap = h >= 12 ? 'PM' : 'AM'
@@ -29,7 +29,6 @@ export default function Profile() {
   const { history, reset: resetSessions } = useSession()
   const streak = deriveStreak(mergedSessions(history), prefs)
 
-  const [theme, setTheme] = useState('indigo')
   const [uiSounds, setUiSounds] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [bedtimeNudge, setBedtimeNudge] = useState(true)
@@ -122,21 +121,21 @@ export default function Profile() {
         {/* Appearance */}
         <SectionTitle>Appearance</SectionTitle>
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
-          Pure Indigo is the default. Two alternate themes are in the works.
+          Pure Indigo is the default. Dusk Rose warms the night; Moonstone
+          cools it.
         </p>
         <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
           {THEMES.map(t => {
-            const on = theme === t.id
+            const on = prefs.theme === t.id
             return (
               <button
                 key={t.id}
                 className="pressable"
-                onClick={() => t.available ? setTheme(t.id) : flash(`${t.name} is coming in a later update.`)}
+                onClick={() => { setPrefs({ theme: t.id }); flash(t.id === 'indigo' ? 'Pure Indigo restored.' : `${t.name} on.`) }}
                 style={{
                   flex: 1, padding: 14, borderRadius: 16, textAlign: 'center',
                   background: 'var(--color-surface)',
                   border: `1px solid ${on ? 'var(--color-accent)' : 'var(--color-hair)'}`,
-                  opacity: t.available ? 1 : 0.5,
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 10 }}>
@@ -144,7 +143,7 @@ export default function Profile() {
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--color-text)' }}>{t.name}</div>
                 <div style={{ fontSize: 10, color: 'var(--color-text-faint)', marginTop: 3 }}>
-                  {t.available ? (on ? 'Active' : 'Tap to use') : 'Soon'}
+                  {on ? 'Active' : 'Tap to use'}
                 </div>
               </button>
             )

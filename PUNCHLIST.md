@@ -92,13 +92,19 @@ Each pass = its own commit(s), typecheck + preview verify, push.
       Needs a user-supplied Pixabay API key. CC0 sourcing from Commons was
       too sparse/low-quality; engine runs on synth until loops are added.
 
-### Pass C-merge — decision (deferred, do together)
-- Review branches `pass-c1-particle-ideation` + `pass-c2-c3-soundscape-
-  identity`; decide what merges to `main`.
+### Pass C-merge  ✅ done
+- C.1 + C.2 + C.3 fast-forward merged to `main` (027af60 → a50dbbe), pushed.
+  Feature branches preserved.
 
-## Pass D — Ship the skins/themes (later)
-- Wire real Dusk Rose + Moonstone personalization themes (Profile theme picker
-  currently shows them as "soon" placeholders).
+## Pass D — Personalization themes  ✅ (branch: pass-d-themes)
+- [x] Dusk Rose (warm) + Moonstone (cold) full `--color-*` token blocks in
+      `index.css`, scoped `[data-theme=...]`; Pure Indigo stays `:root`.
+- [x] `theme` added to PlanProvider prefs (persisted); effect swaps
+      `data-theme` on `<html>` so it applies app-wide + survives reloads.
+- [x] Profile picker activated (no more "Soon"); selection from prefs,
+      verified live — themes recolor every screen and persist on nav.
+- [x] Folded-in particle tuning: dust less faint, fireflies denser +
+      always-alive breathing glow.
 
 ## Known-good (don't regress)
 - The loop is consequential (W1), the clock + night passage (W2), reactive
