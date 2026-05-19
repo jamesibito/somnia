@@ -1,10 +1,32 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Screen, TopBar, Eyebrow, Display, Hairline } from '../components/ui'
 import { ALARM } from '../data/content'
+
+const WINDOWS = ['15 min', '20 min', '30 min', '45 min']
+const SOUNDS = ['Dawn Chimes', 'Soft Bells', 'Slow Tide', 'Birdsong', 'Low Pulse']
+const REPEATS = ['Mon · Tue · Wed · Thu · Fri', 'Every day', 'Sat · Sun', 'Mon · Wed · Fri']
 
 export default function Alarm() {
   const [enabled, setEnabled] = useState(ALARM.enabled)
   const [sunrise, setSunrise] = useState(ALARM.sunrise)
+  const [win, setWin] = useState(1)       // → '20 min'
+  const [sound, setSound] = useState(0)   // → 'Dawn Chimes'
+  const [repeat, setRepeat] = useState(0)
+  const [toast, setToast] = useState<string | null>(null)
+  const tt = useRef<number | null>(null)
+
+  const flash = (msg: string) => {
+    setToast(msg)
+    if (tt.current) clearTimeout(tt.current)
+    tt.current = window.setTimeout(() => setToast(null), 2400)
+  }
+  const cycle = (
+    arr: string[], i: number, set: (n: number) => void, label: string,
+  ) => {
+    const next = (i + 1) % arr.length
+    set(next)
+    flash(`${label}: ${arr[next]}`)
+  }
 
   return (
     <Screen variant="dawn">
@@ -35,17 +57,24 @@ export default function Alarm() {
         We'll wake you in the lightest sleep before {ALARM.target}.
       </Display>
       <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--color-text-muted)', marginBottom: 28 }}>
-        Somnia watches your sleep stages and chooses the gentlest moment inside
-        your {ALARM.windowStart}–{ALARM.windowEnd} window — so you wake clear, not jolted.
+        Somnia watches your sleep stages and wakes you at the gentlest moment
+        in the {WINDOWS[win]} before {ALARM.target} — so you wake clear, not jolted.
       </p>
 
       <Hairline mb={8} />
-      <Toggle label="Smart wake" sub="Wake within the window, not on the dot" on={enabled} onChange={setEnabled} />
-      <Toggle label="Sunrise light" sub="Screen brightens over 20 minutes" on={sunrise} onChange={setSunrise} />
+      <Toggle label="Smart wake" sub="Wake within the window, not on the dot" on={enabled}
+        onChange={v => { setEnabled(v); flash(v ? 'Smart wake on' : 'Exact-time alarm') }} />
+      <Toggle label="Sunrise light" sub="Screen brightens over 20 minutes" on={sunrise}
+        onChange={v => { setSunrise(v); flash(v ? 'Sunrise light on' : 'Sunrise light off') }} />
 
-      <Row label="Wake window" value={`${ALARM.windowStart} – ${ALARM.windowEnd}`} />
-      <Row label="Sound" value={ALARM.sound} />
-      <Row label="Repeat" value={ALARM.days.join(' · ')} last />
+      <CycleRow label="Wake window" value={`${WINDOWS[win]} before ${ALARM.target}`}
+        onClick={() => cycle(WINDOWS, win, setWin, 'Wake window')} />
+      <CycleRow label="Sound" value={SOUNDS[sound]}
+        onClick={() => cycle(SOUNDS, sound, setSound, 'Sound')} />
+      <CycleRow label="Repeat" value={REPEATS[repeat]} last
+        onClick={() => cycle(REPEATS, repeat, setRepeat, 'Repeat')} />
+
+      <Toast msg={toast} />
     </Screen>
   )
 }
@@ -79,14 +108,44 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
   )
 }
 
-function Row({ label, value, last }: { label: string; value: string; last?: boolean }) {
+function CycleRow({ label, value, onClick, last }: { label: string; value: string; onClick: () => void; last?: boolean }) {
   return (
-    <div className="pressable" style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '16px 0', borderBottom: last ? 'none' : '1px solid var(--color-hair)',
-    }}>
+    <button
+      className="pressable focusable"
+      onClick={onClick}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '16px 0', borderBottom: last ? 'none' : '1px solid var(--color-hair)',
+        textAlign: 'left',
+      }}
+    >
       <span style={{ fontSize: 15, color: 'var(--color-text)' }}>{label}</span>
-      <span style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>{value}</span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>{value}</span>
+        <span style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>⤿</span>
+      </span>
+    </button>
+  )
+}
+
+function Toast({ msg }: { msg: string | null }) {
+  return (
+    <div style={{
+      position: 'absolute', left: 20, right: 20, bottom: 40, zIndex: 75,
+      display: 'flex', justifyContent: 'center', pointerEvents: 'none',
+      opacity: msg ? 1 : 0,
+      transform: msg ? 'translateY(0)' : 'translateY(8px)',
+      transition: 'opacity 220ms ease, transform 220ms ease',
+    }}>
+      <div style={{
+        padding: '11px 18px', borderRadius: 999,
+        background: 'rgba(20,14,44,0.86)',
+        backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+        border: '1px solid var(--color-hair)',
+        fontSize: 12.5, color: 'var(--color-text)',
+      }}>
+        {msg}
+      </div>
     </div>
   )
 }

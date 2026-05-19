@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Lock, Play } from 'lucide-react'
 import { Screen, Eyebrow, Display } from '../components/ui'
@@ -9,6 +10,13 @@ const CATS = ['Wind-down', 'Sleep', 'Calm', 'Morning'] as const
 
 export default function MeditateLibrary() {
   const navigate = useNavigate()
+  const [toast, setToast] = useState<string | null>(null)
+  const tt = useRef<number | null>(null)
+  const flash = (msg: string) => {
+    setToast(msg)
+    if (tt.current) clearTimeout(tt.current)
+    tt.current = window.setTimeout(() => setToast(null), 2600)
+  }
   return (
     <>
       <Screen tabSafe variant="calm">
@@ -32,7 +40,9 @@ export default function MeditateLibrary() {
                   <button
                     key={m.id}
                     className="pressable focusable"
-                    onClick={() => m.available && navigate('/meditate/' + m.id)}
+                    onClick={() => m.available
+                      ? navigate('/meditate/' + m.id)
+                      : flash(`“${m.title}” arrives in a later release.`)}
                     style={{
                       textAlign: 'left', padding: 16, borderRadius: 16,
                       background: 'var(--color-surface)',
@@ -65,6 +75,23 @@ export default function MeditateLibrary() {
           )
         })}
       </Screen>
+      <div style={{
+        position: 'absolute', left: 20, right: 20, bottom: 104, zIndex: 75,
+        display: 'flex', justifyContent: 'center', pointerEvents: 'none',
+        opacity: toast ? 1 : 0,
+        transform: toast ? 'translateY(0)' : 'translateY(8px)',
+        transition: 'opacity 220ms ease, transform 220ms ease',
+      }}>
+        <div style={{
+          padding: '11px 18px', borderRadius: 999,
+          background: 'rgba(20,14,44,0.86)',
+          backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid var(--color-hair)',
+          fontSize: 12.5, color: 'var(--color-text)', textAlign: 'center',
+        }}>
+          {toast}
+        </div>
+      </div>
       <TabBar />
     </>
   )
