@@ -15,7 +15,7 @@ import { createContext, useContext, useState, useCallback, useEffect, type React
 
 export const FIELD_CONCEPTS = [
   'motes', 'dust', 'starfield', 'constellation',
-  'embers', 'fireflies', 'bubbles', 'fairies',
+  'embers', 'fireflies', 'bubbles', 'fairies', 'rain',
 ] as const
 export type FieldConcept = (typeof FIELD_CONCEPTS)[number]
 

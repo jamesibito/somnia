@@ -17,6 +17,10 @@ variants through 5 rounds of feedback with target users.
   opacity, size, and weight — not from a contrast color.
 - **Atmosphere, not chrome.** Drifting blurred color, soft grain, breathing
   elements. Hairline dividers, not heavy cards.
+- **Soundscapes are the deliberate exception.** Each soundscape leans overtly
+  into a hue + particle identity matching its audio (rain steel-blue, hearth
+  ember-orange, underwater cyan…). Immersion wins over monochrome *inside* a
+  soundscape; the rest of the app stays Pure Indigo.
 
 ## Palette (tokens in `src/index.css`)
 | Token | Hex | Use |
@@ -47,8 +51,8 @@ never uses it.
 ## Motion
 - Ease-out only. Durations 200 / 400 / 800ms.
 - Background gradients drift (24–40s loops). UI never overshoots.
-- One signature: the spiral mark rotates slowly (~32s) on splash and the
-  "begin" confirmation only.
+- One signature: the spiral mark softly glows + throbs (~6s breath) on splash
+  and while a soundscape plays — it no longer rotates.
 - Everything respects `prefers-reduced-motion`.
 
 ## Sound
@@ -65,5 +69,6 @@ never uses it.
   *(Current loops = CC0 placeholders; final pass swaps to Pixabay-licensed.)*
 - UI is silent by default (a sleep app respects silence). Optional cues later.
 
-## Personalization (future)
-Dusk Rose (warm) and Moonstone (cold) parked as opt-in themes — not defaults.
+## Personalization
+Moonstone (cold) ships as an opt-in theme — not the default. (Dusk Rose was
+explored and cut: warm tones fought the night-time mood.)

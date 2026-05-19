@@ -46,6 +46,7 @@ const DENSITY_SCALE: Record<FieldConcept, number> = {
   fireflies: 0.28,
   bubbles: 0.42,
   fairies: 0.22,
+  rain: 1.5,
 }
 
 export default function GenerativeField({ tint = '#BEB0FF', density = 96, concept = 'motes' }: Props) {
@@ -151,6 +152,15 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
               r: 2.2 + Math.random() * 3.4,
               a: 0.55 + Math.random() * 0.4, ph,
             }); break
+          case 'rain':
+            // fast falling streaks, slight wind shear; r = streak length
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: -0.5 - Math.random() * 0.4,
+              vy: 5.5 + Math.random() * 5,
+              r: 12 + Math.random() * 22,
+              a: 0.12 + Math.random() * 0.22, ph,
+            }); break
         }
       }
     }
@@ -238,6 +248,19 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           }
           blob(p.x, p.y, (p.r + 1) * boost, p.a * tw * (0.85 + amp * 0.4))
         }
+      } else if (activeConcept === 'rain') {
+        ctx.lineCap = 'round'
+        ctx.lineWidth = 1.1
+        for (const p of particles) {
+          const len = p.r * (0.85 + amp * 0.5)
+          const inv = len / p.vy // scale velocity vector to streak length
+          ctx.globalAlpha = p.a * (0.7 + amp * 0.5)
+          ctx.strokeStyle = `rgb(${tr},${tg},${tb})`
+          ctx.beginPath()
+          ctx.moveTo(p.x, p.y)
+          ctx.lineTo(p.x - p.vx * inv, p.y - len)
+          ctx.stroke()
+        }
       } else {
         // motes + dust share the soft-blob draw
         for (const p of particles) blob(p.x, p.y, p.r * boost, p.a * (0.7 + amp * 0.5))
@@ -289,6 +312,10 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           if (p.y < -20) { p.y = H + 20; p.x = Math.random() * W }
           if (p.x < -40) p.x = W + 40
           else if (p.x > W + 40) p.x = -40
+        } else if (activeConcept === 'rain') {
+          // respawn above once a streak falls past the bottom
+          if (p.y - p.r > H) { p.y = -p.r - Math.random() * 60; p.x = Math.random() * (W + 120) }
+          if (p.x < -60) p.x = W + 40
         } else {
           if (p.y < -40) { p.y = H + 40; p.x = Math.random() * W }
           if (p.x < -40) p.x = W + 40

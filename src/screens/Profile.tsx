@@ -13,7 +13,6 @@ import { mergedSessions } from '../utils/sessions'
 
 const THEMES = [
   { id: 'indigo', name: 'Pure Indigo', sw: ['#0E0824', '#B5A8E8'] },
-  { id: 'dusk', name: 'Dusk Rose', sw: ['#150F26', '#E3B6C4'] },
   { id: 'moon', name: 'Moonstone', sw: ['#0E1226', '#C7D2EC'] },
 ] as const
 
@@ -121,8 +120,7 @@ export default function Profile() {
         {/* Appearance */}
         <SectionTitle>Appearance</SectionTitle>
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
-          Pure Indigo is the default. Dusk Rose warms the night; Moonstone
-          cools it.
+          Pure Indigo is the default. Moonstone cools the night.
         </p>
         <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
           {THEMES.map(t => {

@@ -23,7 +23,7 @@ export interface Prefs {
   bedtimeAdjustMin: number
   onboarded: boolean
   /** opt-in personalization theme; 'indigo' is the default Pure Indigo */
-  theme: 'indigo' | 'dusk' | 'moon'
+  theme: 'indigo' | 'moon'
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -123,8 +123,8 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   // Apply the personalization theme app-wide (CSS-var swap on the root).
   useEffect(() => {
     const root = document.documentElement
-    if (prefs.theme && prefs.theme !== 'indigo') root.setAttribute('data-theme', prefs.theme)
-    else root.removeAttribute('data-theme')
+    if (prefs.theme === 'moon') root.setAttribute('data-theme', 'moon')
+    else root.removeAttribute('data-theme') // indigo default + any stale value
   }, [prefs.theme])
 
   const setPrefs = useCallback((patch: Partial<Prefs>) => {

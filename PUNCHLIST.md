@@ -96,9 +96,10 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - C.1 + C.2 + C.3 fast-forward merged to `main` (027af60 → a50dbbe), pushed.
   Feature branches preserved.
 
-## Pass D — Personalization themes  ✅ (branch: pass-d-themes)
-- [x] Dusk Rose (warm) + Moonstone (cold) full `--color-*` token blocks in
-      `index.css`, scoped `[data-theme=...]`; Pure Indigo stays `:root`.
+## Pass D — Personalization themes  ✅ (merged to main)
+- [x] Moonstone (cold) `--color-*` token block in `index.css`, scoped
+      `[data-theme="moon"]`; Pure Indigo stays `:root`. (Dusk Rose was
+      built then cut in Pass E — warm tones fought the night mood.)
 - [x] `theme` added to PlanProvider prefs (persisted); effect swaps
       `data-theme` on `<html>` so it applies app-wide + survives reloads.
 - [x] Profile picker activated (no more "Soon"); selection from prefs,
