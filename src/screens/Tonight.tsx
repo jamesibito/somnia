@@ -29,20 +29,20 @@ export default function Tonight() {
           <Eyebrow>Thu · 16 May</Eyebrow>
         </header>
 
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginBottom: 14 }}>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: 13, marginBottom: 12, letterSpacing: '0.01em' }}>
           {greeting}, {USER.firstName}
         </p>
-        <Display size={36} style={{ marginBottom: 14 }}>
+        <Display size={40} style={{ marginBottom: 16, letterSpacing: '-0.03em' }}>
           Wind‑down at{' '}
-          <span style={{ color: 'var(--color-accent-bright)', borderBottom: '2px solid rgba(201,187,245,0.4)', paddingBottom: 2 }}>
+          <span style={{ color: 'var(--color-accent-bright)' }}>
             {plan.windDownLabel}
           </span>.
         </Display>
         {/* The loop, made visible: why tonight looks the way it does */}
-        <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 34 }}>
-          Shaped for <span style={{ color: 'var(--color-text)' }}>{plan.goalClause}</span>
+        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', lineHeight: 1.6, marginBottom: 36 }}>
+          Shaped for <span style={{ color: 'var(--color-text-muted)' }}>{plan.goalClause}</span>
           {plan.adjusted && (
-            <> · bedtime moved <span style={{ color: 'var(--color-accent)' }}>{prefs.bedtimeAdjustMin}m earlier</span> after last night</>
+            <> · bedtime <span style={{ color: 'var(--color-accent)' }}>−{prefs.bedtimeAdjustMin}m</span> after last night</>
           )}.
         </p>
 
@@ -50,26 +50,26 @@ export default function Tonight() {
         <section
           className="pressable"
           onClick={() => navigate('/sleep')}
-          style={{ paddingTop: 24, borderTop: '1px solid var(--color-hair)', marginBottom: 30 }}
+          style={{ paddingTop: 28, borderTop: '1px solid var(--color-hair)', marginBottom: 32 }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
             <Eyebrow>Last night</Eyebrow>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-muted)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--color-text-faint)', letterSpacing: '0.04em' }}>
               {ln.bedtime} → {ln.wake}
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 16 }}>
-            <BigNumber value={ln.score} />
-            <div style={{ paddingBottom: 10 }}>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--color-text)' }}>{ln.quality}</div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 18 }}>
+            <BigNumber value={ln.score} size={100} />
+            <div style={{ paddingBottom: 8, flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 17, color: 'var(--color-text)', letterSpacing: '-0.01em' }}>{ln.quality}</div>
+              <div style={{ fontSize: 12.5, color: 'var(--color-text-muted)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>
                 {fmtDuration(ln.durationMin)}
               </div>
             </div>
-            <ChevronRight size={18} color="var(--color-text-faint)" style={{ marginLeft: 'auto', alignSelf: 'center' }} />
+            <ChevronRight size={17} color="var(--color-text-faint)" style={{ alignSelf: 'center' }} />
           </div>
-          <div style={{ marginTop: 20 }}><StageBar {...ln.stages} /></div>
-          <div style={{ display: 'flex', gap: 18, marginTop: 12 }}>
+          <div style={{ marginTop: 22 }}><StageBar {...ln.stages} /></div>
+          <div style={{ display: 'flex', gap: 16, marginTop: 11 }}>
             <Legend c="var(--color-accent)" label="Deep" v={ln.stages.deep} />
             <Legend c="var(--color-accent-dim)" label="REM" v={ln.stages.rem} />
             <Legend c="rgba(155,124,232,0.4)" label="Light" v={ln.stages.light} />
@@ -77,8 +77,8 @@ export default function Tonight() {
         </section>
 
         {/* Tonight's plan — derived from onboarding answers */}
-        <section style={{ paddingTop: 24, borderTop: '1px solid var(--color-hair)', marginBottom: 30 }}>
-          <Eyebrow style={{ display: 'block', marginBottom: 14 }}>Tonight's plan</Eyebrow>
+        <section style={{ paddingTop: 28, borderTop: '1px solid var(--color-hair)', marginBottom: 32 }}>
+          <Eyebrow style={{ display: 'block', marginBottom: 16 }}>Tonight's plan</Eyebrow>
           <PlanRow
             icon={<Moon size={15} color="var(--color-text-muted)" strokeWidth={1.5} />}
             label="Bedtime"
@@ -141,9 +141,9 @@ export default function Tonight() {
 function Legend({ c, label, v }: { c: string; label: string; v: number }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ width: 6, height: 6, borderRadius: 3, background: c }} />
-      <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{label}</span>
-      <span style={{ fontSize: 11, color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>{v}%</span>
+      <span style={{ width: 5, height: 5, borderRadius: 3, background: c }} />
+      <span style={{ fontSize: 10.5, color: 'var(--color-text-faint)', letterSpacing: '0.02em' }}>{label}</span>
+      <span style={{ fontSize: 10.5, color: 'var(--color-text-muted)', fontVariantNumeric: 'tabular-nums' }}>{v}%</span>
     </div>
   )
 }

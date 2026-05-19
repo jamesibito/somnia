@@ -29,9 +29,16 @@ Each pass = its own commit(s), typecheck + preview verify, push.
   dreamy voice; revisit if it reads off.
 - Theme picker still shows Dusk/Moonstone as "Soon" (intended → Pass D).
 
-## Pass B — Visual identity evolution (later)
-- More visual hierarchy; evolve the design taste; refine spacing/type scale.
-- "Make it look senior" — the editorial polish tier.
+## Pass B — Visual identity evolution  ✅ done (commit + push)
+- [x] Refined shared primitives (Eyebrow tighter/fainter tracking; BigNumber
+      tighter optical tracking + baseline) → propagates to every screen.
+- [x] Recomposed the hero (Tonight): headline is now the clear focal point
+      (size 40, tighter, cleaner accent — dropped the web-ish underline);
+      secondary "shaped for" recedes; the score signature dominates the
+      Last-night block; quieter legend; consistent 28/32/16 section rhythm.
+- [x] Full zero-dead-ends sweep folded in (Alarm cyclers, Meditate toast).
+- Note: this was a focused editorial pass, not a full restyle. Deeper
+  type-scale tokenization left for a future pass if desired.
 
 ## Pass C — Per-soundscape visuals + colour (later)
 - Distinct atmosphere/particle palette per soundscape (rain vs tide vs fire vs

@@ -84,9 +84,10 @@ export function Eyebrow({ children, style }: { children: ReactNode; style?: CSSP
     <span style={{
       fontFamily: 'var(--font-mono)',
       fontSize: 10,
-      letterSpacing: '0.2em',
+      lineHeight: 1,
+      letterSpacing: '0.24em',
       textTransform: 'uppercase',
-      color: 'var(--color-text-muted)',
+      color: 'var(--color-text-faint)',
       ...style,
     }}>
       {children}
@@ -176,11 +177,12 @@ export function BigNumber({ value, size = 96 }: { value: number | string; size?:
       fontFamily: 'var(--font-serif)',
       fontSize: size,
       fontWeight: 300,
-      lineHeight: 1,
-      letterSpacing: '-0.04em',
+      lineHeight: 0.92,
+      letterSpacing: '-0.045em',
       color: 'var(--color-text)',
       fontVariantNumeric: 'tabular-nums',
       fontVariationSettings: '"opsz" 144',
+      display: 'inline-block',
     }}>
       {value}
     </span>
