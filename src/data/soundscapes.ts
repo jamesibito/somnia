@@ -67,8 +67,8 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
     layers: [
       { id: 'crickets', label: 'Crickets', default: 0.5 },
       { id: 'harp', label: 'Harp', default: 0.42 },
-      { id: 'wind', label: 'Leaves', default: 0.24 },
-      { id: 'drone', label: 'Glow', default: 0.26 },
+      { id: 'fairy', label: 'Shimmer', default: 0.32 },
+      { id: 'wind', label: 'Leaves', default: 0.22 },
     ],
   },
   {
