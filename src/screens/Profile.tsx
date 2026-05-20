@@ -235,6 +235,14 @@ export default function Profile() {
             >
               Source <span style={{ fontSize: 11 }}>↗</span>
             </a>
+            <span style={{ width: 1, height: 12, background: 'var(--color-hair)' }} />
+            <a
+              href="/compare.html" target="_blank" rel="noopener noreferrer"
+              className="pressable focusable"
+              style={{ fontSize: 12.5, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}
+            >
+              Themes <span style={{ fontSize: 11 }}>↗</span>
+            </a>
           </div>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)', marginTop: 6, letterSpacing: '0.14em' }}>
             SOMNIA · v0.3 · CONCEPT

@@ -41,6 +41,15 @@ const DEFAULT_PREFS: Prefs = {
 
 const KEY = 'somnia.prefs.v1'
 
+/** Read ?theme=moon|indigo from the URL — used by the compare iframe. */
+function urlThemeOverride(): Prefs['theme'] | null {
+  try {
+    const t = new URLSearchParams(window.location.search).get('theme')
+    if (t === 'moon' || t === 'indigo') return t
+  } catch { /* SSR / test guard */ }
+  return null
+}
+
 function fmtTime(h: number, m: number) {
   const ampm = h >= 12 ? 'PM' : 'AM'
   const hr = ((h + 11) % 12) + 1
@@ -109,11 +118,14 @@ export const usePlan = () => {
 
 export function PlanProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefsState] = useState<Prefs>(() => {
+    const urlTheme = urlThemeOverride()
     try {
       const raw = localStorage.getItem(KEY)
-      if (raw) return { ...DEFAULT_PREFS, ...JSON.parse(raw) }
+      const stored: Prefs = raw ? { ...DEFAULT_PREFS, ...JSON.parse(raw) } : DEFAULT_PREFS
+      // URL param wins over stored preference (used by the compare iframe).
+      return urlTheme ? { ...stored, theme: urlTheme } : stored
     } catch { /* ignore */ }
-    return DEFAULT_PREFS
+    return urlTheme ? { ...DEFAULT_PREFS, theme: urlTheme } : DEFAULT_PREFS
   })
 
   useEffect(() => {
