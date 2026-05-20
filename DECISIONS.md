@@ -6,6 +6,20 @@ land. New entries on top.
 
 ---
 
+## D-24 · Pass G+ — Slow Tide gains a fourth layer (Gulls)
+**Picked:** Added a `seagulls` LayerId with `buildSeagulls()` procedural fallback,
+slotted in as Slow Tide's 4th layer at a deliberately quiet 0.18 default.
+Layers now: Waves · Gulls · Sea breeze · Deep.
+**Rejected:** Replacing an existing layer (e.g. dropping `drone`'s "Deep"). The
+soundscape lost a layer to gain one — net zero.
+**Why a 4th, not a swap:** Gulls are *occasional* in nature, not a constant
+texture. They want to live alongside the constant tide bed, not replace any of
+the existing fixtures. The 4-layer cap fits in the Pass-G-compressed player
+without scroll. The procedural fallback (sparse downward-glide cries every
+4–9s) cleanly degrades when the file's absent.
+**Learning:** Adding a layer earns its place when it adds a *time signature* the
+existing layers can't (gulls are punctuation, not background).
+
 ## D-23 · Pass G — Bolder per-soundscape palettes (more atmospheric shift)
 **Picked:** Aggressively hue-shifted palettes that commit hard to each soundscape's
 environment — rain = steel blue, hearth = ember orange, fairy = magenta, underwater

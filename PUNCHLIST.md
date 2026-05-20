@@ -173,11 +173,28 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [x] Italic removed from SoundscapePlayer title.
 
 ### Pass G — open / not done
-- [ ] **Source `tide.ogg` + `water.ogg`** — Slow Tide + Underwater still on
-      synth fallback.
+- [x] ~~**Source `tide.ogg` + `water.ogg`**~~ — done in Pass G+ Tier 1 below
 - [ ] `fairy_harp_ascending.mp3` is unused (alternate harp; could be a
       `harp-2` layer or just stay archived).
-- [ ] iOS Safari real-device test (m4a fallback exists but never verified).
+- [ ] iOS Safari real-device test (m4a fallback exists but never verified) —
+      fallback chain audited in code, not yet device-tested.
+
+## Pass G+ — Tier 1 closeout (audio completion)  ✅ (merged to main, commit 3c3bf2e)
+Closes out the Tier 1 items listed at end of the previous session's summary.
+- [x] **`tide.ogg`/`tide.m4a`** — mixed from 3 sources (`waves_soundscape_base` +
+      `waves_sloshing` + `waves_hittingshore_sand`) at 1.0/0.5/0.55 volume,
+      looped to 60s seamless. Slow Tide auto-upgrades.
+- [x] **`water.ogg`/`water.m4a`** — `underwater_ambience.mp3` trimmed to 90s.
+      Underwater soundscape auto-upgrades.
+- [x] **New `seagulls` LayerId** with `buildSeagulls()` procedural fallback
+      (sparse downward-glide cries). `seagulls.ogg/m4a` from looped 18s source.
+- [x] Slow Tide gains a 4th layer: 'Gulls' at 0.18 default. Layers now:
+      Waves · Gulls · Sea breeze · Deep. (See DECISIONS.md D-24.)
+- [x] `.gitignore` updated to exclude `public/audio/*.mp3` sources — only the
+      converted `.ogg` + `.m4a` are tracked.
+- [x] Audio README — full layer status table + conversion command reference.
+- [x] iOS Safari fallback chain audited in code (ogg → m4a → procedural). All
+      12 layers have all 3 paths. Not device-tested yet.
 
 ## Known-good (don't regress)
 - The loop is consequential (W1), the clock + night passage (W2), reactive
@@ -190,10 +207,14 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 
 ## Next-pass candidates (not started)
 See `DECISIONS.md` for context behind earlier calls. Candidates worth considering:
-- **Pass H — Case study site.** Probably the next move — see end of
-  CLAUDE.md / the summary section. Diminishing returns on prototype polish.
-- **Polish-only:** source the missing tide/water audio; iOS Safari sweep;
-  Sleep/Hypnogram visual upgrade; Onboarding compression.
-- **One Tier-C moment:** WebGL volumetric nebula as a single hero scene
-  somewhere (NightMode intro? case-study landing?). Only worth the deps if it
-  earns the hero moment.
+- **Pass H — Case study site.** ⏳ **in progress** as of 2026-05-20.
+  Lives in a new sibling repo `Portfolio/somnia-case-study/`. Prototype itself
+  is paused at v0.4 / Pass G+ until the site ships.
+  See `~/.claude/plans/i-want-to-begin-tender-twilight.md` for the full plan.
+- **Pass I (post-site) candidates** — revisit after Pass H ships:
+  - Onboarding compression (4 screens → 2 with more poetic copy)
+  - Sleep screen hypnogram visual upgrade (currently the weakest visual moment)
+  - Empty states for Sleep (no logged night) + Journal (no entries)
+- **Pass J (only if earned)** — One Tier-C visual: WebGL volumetric nebula in
+  NightMode intro. Decision deferred until after the case study site's hero
+  shader is built — only worth duplicating if it reads beautifully there.
