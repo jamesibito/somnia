@@ -179,6 +179,27 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [ ] iOS Safari real-device test (m4a fallback exists but never verified) —
       fallback chain audited in code, not yet device-tested.
 
+## Pass H+ — Prototype polish (during Pass H site build)  ✅
+Out-of-band polish triggered by owner feedback while building the case study
+site. Caught a few items before they'd be lifted into the new site verbatim.
+- [x] **Profile colophon trimmed** — removed "Source" + "Themes" links.
+      Only "Portfolio" remains. Copy updated: "sleep, meditation, white-noise
+      & soundscape product concept" (was "sleep, meditation & white-noise").
+- [x] **Player breathability restored** — Pass G compressed too aggressively
+      (orb 180→140 was a 22% shrink). Reverted to a ~5–10% reduction:
+      orb 170px, SpiralMark 52px, button 68px, padding 54/26/32. Kept the
+      inline label-beside-slider layer format (it saves ~96px on its own,
+      enough to fit 4 layers without scrolling). See D-25.
+- [x] **Waves particle gets foam** — was 6 flat sine curves; now 4 wave lines
+      + ~30 small bright foam dots drifting rightward with the current. Feels
+      like actual water motion, not an oscilloscope. See D-26.
+- [x] **Cosmic density way down** — was 2.2 (~211 particles); now 0.7 (~67).
+      Shooting-star ratio 10%→4% (rarer = more impactful). 18% of stars are
+      now "big/bright" to carry the void without overcrowding it.
+- [x] **Text contrast bumped** for readability — `--color-text-muted` and
+      `--color-text-faint` both pushed brighter in both themes. Old `-faint`
+      was below WCAG AA for the colophon. See D-27.
+
 ## Pass G+ — Tier 1 closeout (audio completion)  ✅ (merged to main, commit 3c3bf2e)
 Closes out the Tier 1 items listed at end of the previous session's summary.
 - [x] **`tide.ogg`/`tide.m4a`** — mixed from 3 sources (`waves_soundscape_base` +

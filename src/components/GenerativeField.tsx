@@ -47,8 +47,10 @@ const DENSITY_SCALE: Record<FieldConcept, number> = {
   bubbles: 0.42,
   fairies: 0.22,
   rain: 1.5,
-  cosmic: 2.2,   // many stars + a handful of shooting stars
-  waves: 0.06,   // only ~6 wave-line "particles"
+  // Cosmic: sparse void with rare shooting stars — drift/depth over sparkle density.
+  cosmic: 0.7,
+  // Waves: ~4 large wave lines + ~30 foam dots = ~0.36 of base density.
+  waves: 0.36,
 }
 
 export default function GenerativeField({ tint = '#BEB0FF', density = 96, concept = 'motes' }: Props) {
@@ -164,8 +166,8 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
               a: 0.12 + Math.random() * 0.22, ph,
             }); break
           case 'cosmic': {
-            // 90% regular star points, 10% shooting stars (encoded as vy > 2)
-            const isShooting = Math.random() < 0.1
+            // 96% sparse stars, 4% rare shooting stars (encoded as r > 50)
+            const isShooting = Math.random() < 0.04
             if (isShooting) {
               const angle = (-0.2 + Math.random() * -0.4) * Math.PI // downward diagonals
               const spd = 4 + Math.random() * 4
@@ -178,25 +180,43 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
                 a: 0.55 + Math.random() * 0.35, ph,
               })
             } else {
+              // Mix of dim and brighter stars — the bright ones do the heavy lifting
+              const big = Math.random() < 0.18
               particles.push({
                 x: Math.random() * W, y: Math.random() * H,
                 vx: 0, vy: 0,
-                r: 0.5 + Math.random() * 1.8,
-                a: 0.3 + Math.random() * 0.55, ph,
+                r: big ? 1.4 + Math.random() * 1.4 : 0.4 + Math.random() * 0.9,
+                a: big ? 0.55 + Math.random() * 0.4 : 0.2 + Math.random() * 0.35, ph,
               })
             }
             break
           }
-          case 'waves':
-            // each "particle" is a full-width wave line; y = base y, vx = phase speed
-            particles.push({
-              x: Math.random() * Math.PI * 2, // phase offset
-              y: (H / (COUNT + 1)) * (i + 1),
-              vx: 0.003 + Math.random() * 0.005,
-              vy: (Math.random() - 0.5) * 0.04, // slow vertical drift
-              r: 18 + Math.random() * 40,        // wave amplitude
-              a: 0.06 + Math.random() * 0.14, ph,
-            }); break
+          case 'waves': {
+            // Hybrid: ~15% are wave-lines (encoded by r > 12), the rest are foam
+            // particles drifting along the surface. Gives the field actual motion.
+            const isLine = i % 7 === 0 // ~14% are wave lines
+            if (isLine) {
+              particles.push({
+                x: Math.random() * Math.PI * 2, // phase offset
+                y: H * (0.25 + (i / COUNT) * 0.7), // distribute through middle/lower
+                vx: 0.004 + Math.random() * 0.006,
+                vy: (Math.random() - 0.5) * 0.04,
+                r: 22 + Math.random() * 38, // wave amplitude (always > 12 marks it as line)
+                a: 0.12 + Math.random() * 0.16, ph,
+              })
+            } else {
+              // Foam particle — small bright dot drifting with the current
+              particles.push({
+                x: Math.random() * W,
+                y: H * (0.2 + Math.random() * 0.75), // mid-to-lower surface
+                vx: 0.3 + Math.random() * 0.7, // horizontal drift (rightward current)
+                vy: Math.sin(Math.random() * Math.PI * 2) * 0.08, // gentle bob
+                r: 1.0 + Math.random() * 2.2, // small dots (< 12 marks them as foam)
+                a: 0.4 + Math.random() * 0.4, ph,
+              })
+            }
+            break
+          }
         }
       }
     }
@@ -344,14 +364,15 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           ctx.fill()
         }
       } else if (activeConcept === 'waves') {
-        // Draw each wave as a full-width sine curve
+        // Wave-lines first (full-width sine curves), then foam dots on top
         ctx.globalCompositeOperation = 'source-over'
         ctx.lineCap = 'round'
         for (const p of particles) {
-          const amp2 = p.r * (0.7 + amp * 1.2) // amplitude responsive to audio
-          ctx.globalAlpha = p.a * (0.8 + amp * 0.5)
+          if (p.r <= 12) continue // skip foam — drawn next pass
+          const amp2 = p.r * (0.7 + amp * 1.2)
+          ctx.globalAlpha = p.a * (0.85 + amp * 0.5)
           ctx.strokeStyle = `rgb(${tr},${tg},${tb})`
-          ctx.lineWidth = 1.0 + amp * 0.6
+          ctx.lineWidth = 1.2 + amp * 0.7
           ctx.beginPath()
           const steps = Math.ceil(W / 4)
           for (let xi = 0; xi <= steps; xi++) {
@@ -360,6 +381,18 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             xi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
           }
           ctx.stroke()
+        }
+        // Foam dots — bright small particles drifting along, additive
+        ctx.globalCompositeOperation = 'lighter'
+        for (const p of particles) {
+          if (p.r > 12) continue
+          ctx.globalAlpha = p.a * (0.7 + amp * 0.4)
+          ctx.fillStyle = `rgb(${tr},${tg},${tb})`
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, p.r * (0.9 + amp * 0.4), 0, Math.PI * 2)
+          ctx.fill()
+          // Soft halo around larger foam
+          if (p.r > 1.6) blob(p.x, p.y, p.r * 6, p.a * 0.18)
         }
       } else {
         // motes + dust share the soft-blob draw
@@ -404,9 +437,15 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             break
           }
           case 'waves':
-            // p.x = wave phase offset, advances to scroll waves
-            p.x += p.vx * sp
-            p.y += p.vy * 0.3 // very slow vertical drift
+            if (p.r > 12) {
+              // Wave-line — advance phase, slow vertical drift
+              p.x += p.vx * sp
+              p.y += p.vy * 0.3
+            } else {
+              // Foam particle — drift right with the current + gentle vertical bob
+              p.x += p.vx * sp
+              p.y += Math.sin(t * 0.04 + p.ph) * 0.3
+            }
             break
           default:
             p.x += p.vx * sp
@@ -421,9 +460,17 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           }
           // regular stars don't need wrapping — they're stationary
         } else if (activeConcept === 'waves') {
-          // vertical wrap so drifting wave lines cycle
-          if (p.y < -p.r * 2) p.y = H + p.r
-          else if (p.y > H + p.r * 2) p.y = -p.r
+          if (p.r > 12) {
+            // Wave lines wrap vertically
+            if (p.y < -p.r * 2) p.y = H + p.r
+            else if (p.y > H + p.r * 2) p.y = -p.r
+          } else {
+            // Foam wraps horizontally — exits right, reappears on left
+            if (p.x > W + 6) {
+              p.x = -6
+              p.y = H * (0.2 + Math.random() * 0.75)
+            }
+          }
         } else if (activeConcept === 'constellation' || activeConcept === 'fireflies' || activeConcept === 'fairies') {
           // wrap on all edges (free wander)
           if (p.x < -40) p.x = W + 40
