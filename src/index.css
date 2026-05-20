@@ -25,25 +25,6 @@
   --color-positive: #9FE8C4;
 }
 
-/* ─── Dusk Rose — warm opt-in personalization theme ─── */
-[data-theme="dusk"] {
-  --color-bg: #150F26;
-  --color-bg-deep: #100A1F;
-  --color-surface: #1E1430;
-  --color-surface-2: #271A3D;
-  --color-accent: #E3B6C4;
-  --color-accent-bright: #F2CCD6;
-  --color-accent-dim: #C98FA8;
-  --color-accent-ink: #1A0E18;
-  --color-text: #F3E6EC;
-  --color-text-muted: #B59AAA;
-  --color-text-faint: #806979;
-  --color-hair: #2C2038;
-  /* warn shifts to amber so alerts still read against the rose field */
-  --color-warn: #E8C6A0;
-  --color-positive: #B6E2C2;
-}
-
 /* ─── Moonstone — cold opt-in personalization theme ─── */
 [data-theme="moon"] {
   --color-bg: #0E1226;
@@ -112,13 +93,20 @@ input:focus, textarea:focus, button:focus { outline: none; }
 .screen {
   position: absolute;
   inset: 0;
+  overflow: hidden;        /* backdrop layers stay fixed — .screen-body scrolls */
+  background: var(--color-bg);
+}
+
+/* Scrollable content layer — atmosphere/field stay fixed behind it */
+.screen-body {
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  background: var(--color-bg);
+  scrollbar-width: none;
 }
-.screen::-webkit-scrollbar { display: none; }
-.screen { scrollbar-width: none; }
+.screen-body::-webkit-scrollbar { display: none; }
 
 .status-bar {
   position: absolute;
@@ -176,7 +164,12 @@ input:focus, textarea:focus, button:focus { outline: none; }
   0%, 100% { transform: scale(1); opacity: 0.2; }
   50% { transform: scale(1.12); opacity: 0.45; }
 }
-@keyframes spin-slow { to { transform: rotate(360deg); } }
+@keyframes glow-throb {
+  0%, 100% { opacity: 0.7;  transform: scale(0.965);
+             filter: drop-shadow(0 0 5px color-mix(in srgb, var(--color-accent) 35%, transparent)); }
+  50%      { opacity: 1;    transform: scale(1.035);
+             filter: drop-shadow(0 0 16px color-mix(in srgb, var(--color-accent) 60%, transparent)); }
+}
 @keyframes grain {
   0%,100% { transform: translate(0,0); }
   20% { transform: translate(-12%,6%); }
@@ -252,4 +245,11 @@ input[type="range"]::-moz-range-thumb {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* In-app reduce-motion pref — mirrors the OS media query behaviour */
+.phone-shell[data-reduced-motion] *, .phone-shell[data-reduced-motion] *::before, .phone-shell[data-reduced-motion] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }

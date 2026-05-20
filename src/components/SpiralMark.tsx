@@ -3,6 +3,7 @@ interface Props {
   color?: string
   /** kept for API compatibility; the real mark is a filled glyph */
   strokeWidth?: number
+  /** when active, the mark softly glows + throbs (no longer rotates) */
   spinning?: boolean
 }
 
@@ -25,7 +26,7 @@ export default function SpiralMark({ size = 26, color = 'currentColor', spinning
       preserveAspectRatio="xMidYMid meet"
       fill={color}
       aria-hidden
-      style={spinning ? { animation: 'spin-slow 32s linear infinite' } : undefined}
+      style={spinning ? { animation: 'glow-throb 6s ease-in-out infinite', willChange: 'opacity, transform, filter' } : undefined}
     >
       <path d={P1} />
       <path d={P2} />

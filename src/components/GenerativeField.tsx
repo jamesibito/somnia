@@ -46,6 +46,9 @@ const DENSITY_SCALE: Record<FieldConcept, number> = {
   fireflies: 0.28,
   bubbles: 0.42,
   fairies: 0.22,
+  rain: 1.5,
+  cosmic: 2.2,   // many stars + a handful of shooting stars
+  waves: 0.06,   // only ~6 wave-line "particles"
 }
 
 export default function GenerativeField({ tint = '#BEB0FF', density = 96, concept = 'motes' }: Props) {
@@ -151,6 +154,49 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
               r: 2.2 + Math.random() * 3.4,
               a: 0.55 + Math.random() * 0.4, ph,
             }); break
+          case 'rain':
+            // fast falling streaks, slight wind shear; r = streak length
+            particles.push({
+              x: Math.random() * W, y: Math.random() * H,
+              vx: -0.5 - Math.random() * 0.4,
+              vy: 5.5 + Math.random() * 5,
+              r: 12 + Math.random() * 22,
+              a: 0.12 + Math.random() * 0.22, ph,
+            }); break
+          case 'cosmic': {
+            // 90% regular star points, 10% shooting stars (encoded as vy > 2)
+            const isShooting = Math.random() < 0.1
+            if (isShooting) {
+              const angle = (-0.2 + Math.random() * -0.4) * Math.PI // downward diagonals
+              const spd = 4 + Math.random() * 4
+              particles.push({
+                x: Math.random() * W * 1.4 - W * 0.2,
+                y: Math.random() * H * 0.5,
+                vx: Math.cos(angle) * spd,
+                vy: Math.sin(angle) * spd,
+                r: 60 + Math.random() * 80,   // trail length
+                a: 0.55 + Math.random() * 0.35, ph,
+              })
+            } else {
+              particles.push({
+                x: Math.random() * W, y: Math.random() * H,
+                vx: 0, vy: 0,
+                r: 0.5 + Math.random() * 1.8,
+                a: 0.3 + Math.random() * 0.55, ph,
+              })
+            }
+            break
+          }
+          case 'waves':
+            // each "particle" is a full-width wave line; y = base y, vx = phase speed
+            particles.push({
+              x: Math.random() * Math.PI * 2, // phase offset
+              y: (H / (COUNT + 1)) * (i + 1),
+              vx: 0.003 + Math.random() * 0.005,
+              vy: (Math.random() - 0.5) * 0.04, // slow vertical drift
+              r: 18 + Math.random() * 40,        // wave amplitude
+              a: 0.06 + Math.random() * 0.14, ph,
+            }); break
         }
       }
     }
@@ -238,6 +284,83 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           }
           blob(p.x, p.y, (p.r + 1) * boost, p.a * tw * (0.85 + amp * 0.4))
         }
+      } else if (activeConcept === 'rain') {
+        ctx.lineCap = 'round'
+        ctx.lineWidth = 1.1
+        for (const p of particles) {
+          const len = p.r * (0.85 + amp * 0.5)
+          const inv = len / p.vy // scale velocity vector to streak length
+          ctx.globalAlpha = p.a * (0.7 + amp * 0.5)
+          ctx.strokeStyle = `rgb(${tr},${tg},${tb})`
+          ctx.beginPath()
+          ctx.moveTo(p.x, p.y)
+          ctx.lineTo(p.x - p.vx * inv, p.y - len)
+          ctx.stroke()
+        }
+      } else if (activeConcept === 'cosmic') {
+        // Sort: draw stars first, then shooting stars on top
+        for (const p of particles) {
+          const isShooting = Math.abs(p.vx) > 1.5 || Math.abs(p.vy) > 1.5
+          if (isShooting) continue
+          // Regular stars: tiny sharp point with gentle twinkle
+          const tw = 0.55 + 0.45 * Math.sin(t * 0.025 + p.ph)
+          const alpha = p.a * tw * (0.65 + amp * 0.6)
+          // Draw as a crisp bright point
+          ctx.globalAlpha = alpha
+          ctx.fillStyle = `rgb(${tr},${tg},${tb})`
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, p.r * boost, 0, Math.PI * 2)
+          ctx.fill()
+          // Soft glow halo around brighter stars
+          if (p.r > 1.2) blob(p.x, p.y, p.r * 5 * boost, alpha * 0.18)
+        }
+        // Shooting stars — gradient streak
+        for (const p of particles) {
+          const isShooting = Math.abs(p.vx) > 1.5 || Math.abs(p.vy) > 1.5
+          if (!isShooting) continue
+          const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
+          const trailLen = p.r * (0.8 + amp * 0.5)
+          const nx = -p.vx / speed, ny = -p.vy / speed // unit vector backwards
+          const grd = ctx.createLinearGradient(
+            p.x, p.y,
+            p.x + nx * trailLen, p.y + ny * trailLen
+          )
+          grd.addColorStop(0, `rgba(${tr},${tg},${tb},${p.a})`)
+          grd.addColorStop(0.35, `rgba(${tr},${tg},${tb},${p.a * 0.4})`)
+          grd.addColorStop(1, `rgba(${tr},${tg},${tb},0)`)
+          ctx.globalAlpha = 1
+          ctx.strokeStyle = grd
+          ctx.lineWidth = 1.6
+          ctx.lineCap = 'round'
+          ctx.beginPath()
+          ctx.moveTo(p.x, p.y)
+          ctx.lineTo(p.x + nx * trailLen, p.y + ny * trailLen)
+          ctx.stroke()
+          // Bright head
+          ctx.globalAlpha = p.a
+          ctx.fillStyle = `rgba(255,255,255,0.9)`
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, 1.2 * boost, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      } else if (activeConcept === 'waves') {
+        // Draw each wave as a full-width sine curve
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.lineCap = 'round'
+        for (const p of particles) {
+          const amp2 = p.r * (0.7 + amp * 1.2) // amplitude responsive to audio
+          ctx.globalAlpha = p.a * (0.8 + amp * 0.5)
+          ctx.strokeStyle = `rgb(${tr},${tg},${tb})`
+          ctx.lineWidth = 1.0 + amp * 0.6
+          ctx.beginPath()
+          const steps = Math.ceil(W / 4)
+          for (let xi = 0; xi <= steps; xi++) {
+            const x = (xi / steps) * W
+            const y = p.y + Math.sin(x * 0.018 + p.x + t * p.vx) * amp2
+            xi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+          }
+          ctx.stroke()
+        }
       } else {
         // motes + dust share the soft-blob draw
         for (const p of particles) blob(p.x, p.y, p.r * boost, p.a * (0.7 + amp * 0.5))
@@ -273,12 +396,35 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             p.x += (p.vx + Math.sin(t * 0.013 + p.ph) * 0.14) * sp
             p.y += (p.vy + Math.cos(t * 0.011 + p.ph) * 0.14) * sp
             break
+          case 'cosmic': {
+            // Shooting stars (r > 50 = long trail); regular stars are stationary
+            const isShooting = p.r > 50
+            if (isShooting) { p.x += p.vx * sp; p.y += p.vy * sp }
+            // regular stars: no positional movement — twinkle only
+            break
+          }
+          case 'waves':
+            // p.x = wave phase offset, advances to scroll waves
+            p.x += p.vx * sp
+            p.y += p.vy * 0.3 // very slow vertical drift
+            break
           default:
             p.x += p.vx * sp
             p.y += p.vy * sp
         }
 
-        if (activeConcept === 'constellation' || activeConcept === 'fireflies' || activeConcept === 'fairies') {
+        if (activeConcept === 'cosmic') {
+          const isShooting = p.r > 50
+          if (isShooting && (p.x > W + 60 || p.y > H + 60 || p.x < -60)) {
+            p.x = Math.random() * W * 0.6
+            p.y = -10 - Math.random() * 80
+          }
+          // regular stars don't need wrapping — they're stationary
+        } else if (activeConcept === 'waves') {
+          // vertical wrap so drifting wave lines cycle
+          if (p.y < -p.r * 2) p.y = H + p.r
+          else if (p.y > H + p.r * 2) p.y = -p.r
+        } else if (activeConcept === 'constellation' || activeConcept === 'fireflies' || activeConcept === 'fairies') {
           // wrap on all edges (free wander)
           if (p.x < -40) p.x = W + 40
           else if (p.x > W + 40) p.x = -40
@@ -289,6 +435,10 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           if (p.y < -20) { p.y = H + 20; p.x = Math.random() * W }
           if (p.x < -40) p.x = W + 40
           else if (p.x > W + 40) p.x = -40
+        } else if (activeConcept === 'rain') {
+          // respawn above once a streak falls past the bottom
+          if (p.y - p.r > H) { p.y = -p.r - Math.random() * 60; p.x = Math.random() * (W + 120) }
+          if (p.x < -60) p.x = W + 40
         } else {
           if (p.y < -40) { p.y = H + 40; p.x = Math.random() * W }
           if (p.x < -40) p.x = W + 40
@@ -298,6 +448,7 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
     }
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || !!document.querySelector('.phone-shell[data-reduced-motion]')
     let raf = 0
 
     if (reduced) {

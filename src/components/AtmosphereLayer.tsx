@@ -30,7 +30,9 @@ function useAmplitudeVar(enabled: boolean) {
   const raf = useRef<number | null>(null)
   useEffect(() => {
     if (!enabled) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || !!document.querySelector('.phone-shell[data-reduced-motion]')
+    if (reduced) return
     const shell = document.querySelector('.phone-shell') as HTMLElement | null
     if (!shell) return
     let smoothed = 0

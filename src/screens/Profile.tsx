@@ -13,7 +13,6 @@ import { mergedSessions } from '../utils/sessions'
 
 const THEMES = [
   { id: 'indigo', name: 'Pure Indigo', sw: ['#0E0824', '#B5A8E8'] },
-  { id: 'dusk', name: 'Dusk Rose', sw: ['#150F26', '#E3B6C4'] },
   { id: 'moon', name: 'Moonstone', sw: ['#0E1226', '#C7D2EC'] },
 ] as const
 
@@ -30,7 +29,6 @@ export default function Profile() {
   const streak = deriveStreak(mergedSessions(history), prefs)
 
   const [uiSounds, setUiSounds] = useState(false)
-  const [reduceMotion, setReduceMotion] = useState(false)
   const [bedtimeNudge, setBedtimeNudge] = useState(true)
   const [editing, setEditing] = useState<null | 'bedtime' | 'goal'>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -121,8 +119,7 @@ export default function Profile() {
         {/* Appearance */}
         <SectionTitle>Appearance</SectionTitle>
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
-          Pure Indigo is the default. Dusk Rose warms the night; Moonstone
-          cools it.
+          Pure Indigo is the default. Moonstone cools the night.
         </p>
         <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
           {THEMES.map(t => {
@@ -150,8 +147,35 @@ export default function Profile() {
           })}
         </div>
 
+        {/* Particle density */}
+        <div style={{ padding: '18px 0', borderBottom: '1px solid var(--color-hair)' }}>
+          <div style={{ fontSize: 15, color: 'var(--color-text)', marginBottom: 4 }}>Particle field</div>
+          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 14 }}>Drifting dust on hero screens</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['off', 'subtle', 'standard'] as const).map(d => {
+              const on = (prefs.fieldDensity ?? 'standard') === d
+              return (
+                <button
+                  key={d}
+                  className="pressable"
+                  onClick={() => { setPrefs({ fieldDensity: d }); flash(d === 'off' ? 'Particles off.' : `Particles: ${d}.`) }}
+                  style={{
+                    flex: 1, padding: '9px 0', borderRadius: 12, fontSize: 12.5,
+                    background: on ? 'var(--color-accent)' : 'var(--color-surface)',
+                    color: on ? 'var(--color-accent-ink)' : 'var(--color-text-muted)',
+                    border: `1px solid ${on ? 'var(--color-accent)' : 'var(--color-hair)'}`,
+                    fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
+                    textTransform: 'uppercase' as const,
+                  }}
+                >
+                  {d}
+                </button>
+              )
+            })}
+          </div>
+        </div>
         <SettingToggle icon={<Volume2 size={16} />} label="UI sounds" sub="Off by default — silence is the respectful default" on={uiSounds} set={v => { setUiSounds(v); flash(v ? 'UI sounds on.' : 'UI sounds off.') }} />
-        <SettingToggle icon={<Moon size={16} />} label="Reduce motion" sub="Stills the drifting background" on={reduceMotion} set={v => { setReduceMotion(v); flash(v ? 'Motion reduced.' : 'Motion restored.') }} />
+        <SettingToggle icon={<Moon size={16} />} label="Reduce motion" sub="Stills backgrounds, stops particle effects" on={!!prefs.reducedMotion} set={v => { setPrefs({ reducedMotion: v }); flash(v ? 'Motion reduced.' : 'Motion restored.') }} />
         <SettingToggle icon={<Bell size={16} />} label="Bedtime nudge" sub={`One notification at ${fmtClock(prefs.bedtimeHour, prefs.bedtimeMinute)}`} on={bedtimeNudge} set={v => { setBedtimeNudge(v); flash(v ? 'Bedtime nudge on.' : 'Bedtime nudge off.') }} last />
 
         {/* Sleep goals — real, write to the plan */}
@@ -236,6 +260,14 @@ export default function Profile() {
               style={{ fontSize: 12.5, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}
             >
               Source <span style={{ fontSize: 11 }}>↗</span>
+            </a>
+            <span style={{ width: 1, height: 12, background: 'var(--color-hair)' }} />
+            <a
+              href="/compare.html" target="_blank" rel="noopener noreferrer"
+              className="pressable focusable"
+              style={{ fontSize: 12.5, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}
+            >
+              Themes <span style={{ fontSize: 11 }}>↗</span>
             </a>
           </div>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)', marginTop: 6, letterSpacing: '0.14em' }}>

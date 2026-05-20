@@ -23,7 +23,11 @@ export interface Prefs {
   bedtimeAdjustMin: number
   onboarded: boolean
   /** opt-in personalization theme; 'indigo' is the default Pure Indigo */
-  theme: 'indigo' | 'dusk' | 'moon'
+  theme: 'indigo' | 'moon'
+  /** reduce motion + particle effects for accessibility / battery saving */
+  reducedMotion: boolean
+  /** particle field density on hero screens */
+  fieldDensity: 'off' | 'subtle' | 'standard'
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -37,9 +41,20 @@ const DEFAULT_PREFS: Prefs = {
   bedtimeAdjustMin: 0,
   onboarded: false,
   theme: 'indigo',
+  reducedMotion: false,
+  fieldDensity: 'standard',
 }
 
 const KEY = 'somnia.prefs.v1'
+
+/** Read ?theme=moon|indigo from the URL — used by the compare iframe. */
+function urlThemeOverride(): Prefs['theme'] | null {
+  try {
+    const t = new URLSearchParams(window.location.search).get('theme')
+    if (t === 'moon' || t === 'indigo') return t
+  } catch { /* SSR / test guard */ }
+  return null
+}
 
 function fmtTime(h: number, m: number) {
   const ampm = h >= 12 ? 'PM' : 'AM'
@@ -109,11 +124,14 @@ export const usePlan = () => {
 
 export function PlanProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefsState] = useState<Prefs>(() => {
+    const urlTheme = urlThemeOverride()
     try {
       const raw = localStorage.getItem(KEY)
-      if (raw) return { ...DEFAULT_PREFS, ...JSON.parse(raw) }
+      const stored: Prefs = raw ? { ...DEFAULT_PREFS, ...JSON.parse(raw) } : DEFAULT_PREFS
+      // URL param wins over stored preference (used by the compare iframe).
+      return urlTheme ? { ...stored, theme: urlTheme } : stored
     } catch { /* ignore */ }
-    return DEFAULT_PREFS
+    return urlTheme ? { ...DEFAULT_PREFS, theme: urlTheme } : DEFAULT_PREFS
   })
 
   useEffect(() => {
@@ -123,9 +141,17 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   // Apply the personalization theme app-wide (CSS-var swap on the root).
   useEffect(() => {
     const root = document.documentElement
-    if (prefs.theme && prefs.theme !== 'indigo') root.setAttribute('data-theme', prefs.theme)
-    else root.removeAttribute('data-theme')
+    if (prefs.theme === 'moon') root.setAttribute('data-theme', 'moon')
+    else root.removeAttribute('data-theme') // indigo default + any stale value
   }, [prefs.theme])
+
+  // Apply reduce-motion pref as a data attribute so CSS + JS can both read it.
+  useEffect(() => {
+    const shell = document.querySelector('.phone-shell') as HTMLElement | null
+    if (!shell) return
+    if (prefs.reducedMotion) shell.setAttribute('data-reduced-motion', '')
+    else shell.removeAttribute('data-reduced-motion')
+  }, [prefs.reducedMotion])
 
   const setPrefs = useCallback((patch: Partial<Prefs>) => {
     setPrefsState(prev => ({ ...prev, ...patch }))

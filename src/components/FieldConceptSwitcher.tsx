@@ -10,6 +10,8 @@ import { FIELD_CONCEPTS, useFieldConcept } from '../context/FieldConceptProvider
  */
 export default function FieldConceptSwitcher() {
   if (!import.meta.env.DEV) return null
+  // Hide when embedded in the theme-compare iframe.
+  if (new URLSearchParams(window.location.search).get('embed') === '1') return null
   return <Panel />
 }
 

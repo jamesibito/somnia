@@ -67,8 +67,8 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
     layers: [
       { id: 'crickets', label: 'Crickets', default: 0.5 },
       { id: 'harp', label: 'Harp', default: 0.42 },
-      { id: 'wind', label: 'Leaves', default: 0.24 },
-      { id: 'drone', label: 'Glow', default: 0.26 },
+      { id: 'fairy', label: 'Shimmer', default: 0.32 },
+      { id: 'wind', label: 'Leaves', default: 0.22 },
     ],
   },
   {
@@ -99,14 +99,16 @@ export interface SoundscapePalette {
 }
 
 export const SOUNDSCAPE_PALETTES: Record<string, SoundscapePalette> = {
-  'light-rainstorm': { b1: 'rgba(120,140,255,0.5)',  b2: 'rgba(86,84,210,0.46)',  b3: 'rgba(150,170,245,0.3)',  tint: '#A9B8F5', concept: 'motes' },
-  'cedar-forest':    { b1: 'rgba(110,160,205,0.46)', b2: 'rgba(86,120,175,0.46)', b3: 'rgba(150,180,210,0.28)', tint: '#9DC2D8', concept: 'fireflies' },
-  'slow-tide':       { b1: 'rgba(86,150,235,0.5)',   b2: 'rgba(64,98,200,0.5)',   b3: 'rgba(150,195,240,0.3)',  tint: '#8FBEF0', concept: 'bubbles' },
-  'hearth':          { b1: 'rgba(208,128,150,0.42)', b2: 'rgba(150,86,150,0.42)', b3: 'rgba(225,170,140,0.26)', tint: '#E2A88F', concept: 'embers' },
+  // Soundscapes intentionally break the monochrome rule — each leans into a
+  // hue that matches the audio's vibe (more overt than the rest of the app).
+  'light-rainstorm': { b1: 'rgba(96,128,235,0.55)',  b2: 'rgba(70,96,200,0.5)',   b3: 'rgba(150,178,245,0.32)', tint: '#9FB6F2', concept: 'rain' },
+  'cedar-forest':    { b1: 'rgba(70,150,120,0.5)',   b2: 'rgba(54,118,98,0.5)',   b3: 'rgba(120,190,150,0.3)',  tint: '#8FD8B0', concept: 'fireflies' },
+  'slow-tide':       { b1: 'rgba(40,130,200,0.55)',  b2: 'rgba(30,90,175,0.55)',  b3: 'rgba(110,185,225,0.32)', tint: '#6FC4E8', concept: 'waves' },
+  'hearth':          { b1: 'rgba(230,130,70,0.5)',   b2: 'rgba(190,80,70,0.48)',  b3: 'rgba(240,175,110,0.3)',  tint: '#F0A867', concept: 'embers' },
   'static-bloom':    { b1: 'rgba(155,118,255,0.5)',  b2: 'rgba(98,72,200,0.46)',  b3: 'rgba(181,168,232,0.3)',  tint: '#BEB0FF', concept: 'starfield' },
-  'deep-drift':      { b1: 'rgba(120,84,220,0.46)',  b2: 'rgba(74,52,165,0.5)',   b3: 'rgba(140,116,222,0.26)', tint: '#9B7CE8', concept: 'constellation' },
-  'fairy-forest':    { b1: 'rgba(150,120,235,0.46)', b2: 'rgba(110,90,205,0.46)', b3: 'rgba(176,150,240,0.28)', tint: '#C7B0F2', concept: 'fairies' },
-  'underwater':      { b1: 'rgba(54,120,210,0.5)',   b2: 'rgba(40,80,175,0.52)',  b3: 'rgba(96,168,225,0.3)',   tint: '#74C0E8', concept: 'bubbles' },
+  'deep-drift':      { b1: 'rgba(10,4,30,0.9)',       b2: 'rgba(20,8,50,0.85)',    b3: 'rgba(60,30,120,0.25)',   tint: '#FFD87A', concept: 'cosmic' },
+  'fairy-forest':    { b1: 'rgba(200,110,230,0.5)',  b2: 'rgba(150,80,210,0.5)',  b3: 'rgba(225,150,240,0.3)',  tint: '#E0A8F2', concept: 'fairies' },
+  'underwater':      { b1: 'rgba(40,160,210,0.55)',  b2: 'rgba(30,110,190,0.55)', b3: 'rgba(90,200,225,0.32)',  tint: '#5CC8E0', concept: 'bubbles' },
 }
 
 export function getPalette(id: string | undefined): SoundscapePalette {

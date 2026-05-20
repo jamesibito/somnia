@@ -20,7 +20,7 @@
 
 export type LayerId =
   | 'rain' | 'thunder' | 'wind' | 'tide' | 'fire' | 'drone'
-  | 'crickets' | 'harp' | 'bubbles' | 'water'
+  | 'crickets' | 'harp' | 'bubbles' | 'water' | 'fairy'
 
 type Builder = (c: AudioContext, out: GainNode, send: GainNode) => () => void
 
@@ -421,6 +421,35 @@ function buildWater(c: AudioContext, out: GainNode, send: GainNode) {
   return () => { src.stop(); lfo.stop(); amp.stop(); stopPan() }
 }
 
+/**
+ * Fairy shimmer — soft high-frequency glitter pad with gentle ring-mod shimmer.
+ * Procedural fallback; the recorded fairy.ogg takes precedence when present.
+ */
+function buildFairy(c: AudioContext, out: GainNode, send: GainNode) {
+  const freqs = [660, 880, 990, 1320, 1760] // high overtone shimmer
+  let timer: number, cancelled = false
+  const glitter = () => {
+    if (cancelled) return
+    const f = freqs[Math.floor(Math.random() * freqs.length)]
+    const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = f
+    const g = c.createGain()
+    const pn = panner(c, Math.random() * 1.6 - 0.8)
+    const now = c.currentTime
+    const peak = 0.04 + Math.random() * 0.06
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.linearRampToValueAtTime(peak, now + 0.012)
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.8 + Math.random() * 1.2)
+    o.connect(g).connect(pn)
+    pn.connect(out)
+    const wet = c.createGain(); wet.gain.value = 2.2
+    pn.connect(wet).connect(send) // very wet — lives in the reverb tail
+    o.start(now); o.stop(now + 2.4)
+    timer = window.setTimeout(glitter, 200 + Math.random() * 1400)
+  }
+  glitter()
+  return () => { cancelled = true; clearTimeout(timer) }
+}
+
 // ─── Sampled layers (recorded loops, lazy, with synth fallback) ─────────────
 
 const bufferCache = new Map<string, AudioBuffer>()
@@ -511,13 +540,14 @@ const BUILDERS: Record<LayerId, Builder> = {
   harp:     sampleLayer('harp',     { gain: 0.7 },  buildHarp),
   bubbles:  sampleLayer('bubbles',  { gain: 0.75, lowpass: 1400 }, buildBubbles),
   water:    sampleLayer('water',    { gain: 0.9,  lowpass: 820 },  buildWater),
+  fairy:    sampleLayer('fairy',    { gain: 0.72 },                buildFairy),
   drone:    buildDrone,
 }
 
 // Per-layer reverb send amounts — how much "space" each lives in.
 const SEND: Record<LayerId, number> = {
   rain: 0.16, thunder: 0.5, wind: 0.22, tide: 0.34, fire: 0.12, drone: 0.4,
-  crickets: 0.2, harp: 0.52, bubbles: 0.3, water: 0.3,
+  crickets: 0.2, harp: 0.52, bubbles: 0.3, water: 0.3, fairy: 0.6,
 }
 
 // ─── Public API (unchanged) ────────────────────────────────────────────────

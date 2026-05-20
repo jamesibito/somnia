@@ -3,6 +3,9 @@ import { ChevronLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import AtmosphereLayer from './AtmosphereLayer'
 import GenerativeField from './GenerativeField'
+import { usePlan } from '../context/PlanProvider'
+
+const DENSITY_MAP = { standard: 96, subtle: 48, off: 0 } as const
 
 /** Scrollable screen with atmosphere + entrance animation. */
 export function Screen({
@@ -24,20 +27,28 @@ export function Screen({
   /** opt-in audio-reactive atmosphere */
   reactive?: boolean
 }) {
+  const { prefs } = usePlan()
+  const fieldDensity = prefs.fieldDensity ?? 'standard'
+  const showField = field && !prefs.reducedMotion && fieldDensity !== 'off'
+
   return (
     <div className="screen">
+      {/* Atmosphere + field are fixed backdrop — outside the scroll layer */}
       <AtmosphereLayer variant={variant} grain={grain} reactive={reactive} />
-      {field && <GenerativeField />}
-      <div
-        className="screen-enter"
-        style={{
-          position: 'relative',
-          minHeight: '100%',
-          padding: pad ? '64px 26px 0' : 0,
-          paddingBottom: tabSafe ? 112 : 40,
-        }}
-      >
-        {children}
+      {showField && <GenerativeField concept="dust" density={DENSITY_MAP[fieldDensity]} />}
+      {/* Scrollable content sits above the backdrop */}
+      <div className="screen-body">
+        <div
+          className="screen-enter"
+          style={{
+            position: 'relative',
+            minHeight: '100%',
+            padding: pad ? '64px 26px 0' : 0,
+            paddingBottom: tabSafe ? 112 : 40,
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   )

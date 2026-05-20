@@ -107,6 +107,7 @@ export default function NightMode() {
         }} />
       </div>
 
+      <div className="screen-body">
       <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 36 }}>
 
         {phase === 'choose' && (
@@ -202,7 +203,7 @@ export default function NightMode() {
               marginTop: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18,
             }}>
               <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--color-text-muted)' }}>
-                {plan.soundscape.name} is playing.
+                <em style={{ fontStyle: 'italic' }}>{plan.soundscape.name}</em> is playing.
               </p>
               <p style={{ fontSize: 12.5, color: 'var(--color-text-faint)', maxWidth: 240, lineHeight: 1.6 }}>
                 Set the phone down. The screen will dim itself. Sound fades out on its own.
@@ -223,6 +224,7 @@ export default function NightMode() {
           </div>
         )}
       </div>
+      </div>{/* .screen-body */}
       {passing && (
         <TimeCompression
           onComplete={() => {
