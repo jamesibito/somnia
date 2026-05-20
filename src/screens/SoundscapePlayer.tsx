@@ -10,19 +10,6 @@ import { getSoundscape, getPalette, SOUNDSCAPES } from '../data/soundscapes'
 
 const TIMER_OPTS = [15, 30, 45, 60, 90]
 
-/** Small icon per audio layer ID — replaces the plain text label */
-function LayerIcon({ id }: { id: string }) {
-  const icons: Record<string, string> = {
-    rain: '🌧', thunder: '⚡', wind: '💨', tide: '🌊', fire: '🔥',
-    drone: '∿', crickets: '🦗', harp: '🎵', bubbles: '○', water: '~',
-  }
-  return (
-    <span style={{ fontSize: 14, lineHeight: 1, opacity: 0.9, userSelect: 'none' }}>
-      {icons[id] ?? '◆'}
-    </span>
-  )
-}
-
 export default function SoundscapePlayer() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -98,7 +85,7 @@ export default function SoundscapePlayer() {
           {/* Title — no synthesis label */}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <h1 style={{
-              fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 400,
+              fontFamily: 'var(--font-serif)', fontWeight: 400,
               fontSize: 30, color: 'var(--color-text)', letterSpacing: '-0.02em',
             }}>
               {s.name}
@@ -203,12 +190,11 @@ export default function SoundscapePlayer() {
             </div>
           </div>
 
-          {/* Layer faders — icon + label, no percentage readout */}
+          {/* Layer faders */}
           <section style={{ borderTop: '1px solid var(--color-hair)', paddingTop: 20 }}>
             {s.layers.map(layer => (
               <div key={layer.id} style={{ marginBottom: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <LayerIcon id={layer.id} />
                   <span style={{ fontSize: 13.5, color: 'var(--color-text-muted)', flex: 1 }}>{layer.label}</span>
                 </div>
                 <input

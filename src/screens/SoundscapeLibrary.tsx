@@ -4,7 +4,23 @@ import TabBar from '../components/TabBar'
 import SpiralMark from '../components/SpiralMark'
 import { SOUNDSCAPES, getPalette } from '../data/soundscapes'
 import { useAudio } from '../context/AudioProvider'
-import { Play } from 'lucide-react'
+import {
+  Play, CloudRain, Leaf, Waves, Flame,
+  Radio, Moon, Sparkles, Droplets,
+  type LucideProps,
+} from 'lucide-react'
+import type { ComponentType } from 'react'
+
+const SOUNDSCAPE_ICONS: Record<string, ComponentType<LucideProps>> = {
+  'light-rainstorm': CloudRain,
+  'cedar-forest':    Leaf,
+  'slow-tide':       Waves,
+  'hearth':          Flame,
+  'static-bloom':    Radio,
+  'deep-drift':      Moon,
+  'fairy-forest':    Sparkles,
+  'underwater':      Droplets,
+}
 
 export default function SoundscapeLibrary() {
   const navigate = useNavigate()
@@ -24,9 +40,10 @@ export default function SoundscapeLibrary() {
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {SOUNDSCAPES.map((s, i) => {
+          {SOUNDSCAPES.map((s) => {
             const active = current?.id === s.id
             const pal = getPalette(s.id)
+            const Icon = SOUNDSCAPE_ICONS[s.id]
             return (
               <button
                 key={s.id}
@@ -56,16 +73,16 @@ export default function SoundscapeLibrary() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{
-                    fontFamily: 'var(--font-serif)', fontStyle: 'italic',
+                    fontFamily: 'var(--font-serif)',
                     fontSize: 18, color: 'var(--color-text)', marginBottom: 3,
                   }}>
                     {s.name}
                   </div>
                   <div style={{ fontSize: 12.5, color: 'var(--color-text-muted)' }}>{s.tagline}</div>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)' }}>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
+                {Icon && (
+                  <Icon size={16} color="var(--color-text-faint)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+                )}
               </button>
             )
           })}

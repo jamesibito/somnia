@@ -26,6 +26,8 @@ export interface Prefs {
   theme: 'indigo' | 'moon'
   /** reduce motion + particle effects for accessibility / battery saving */
   reducedMotion: boolean
+  /** particle field density on hero screens */
+  fieldDensity: 'off' | 'subtle' | 'standard'
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -40,6 +42,7 @@ const DEFAULT_PREFS: Prefs = {
   onboarded: false,
   theme: 'indigo',
   reducedMotion: false,
+  fieldDensity: 'standard',
 }
 
 const KEY = 'somnia.prefs.v1'
