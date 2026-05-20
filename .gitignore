@@ -6,3 +6,7 @@ dist-ssr
 node_modules/.tmp
 *.tsbuildinfo
 .vite
+
+# Audio sources — only the converted .ogg/.m4a files are tracked.
+# Sources kept locally for reproducibility but not committed (some are large).
+public/audio/*.mp3

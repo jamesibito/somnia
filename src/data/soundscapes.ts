@@ -28,8 +28,9 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
     tagline: 'Long ocean swells at night',
     layers: [
       { id: 'tide', label: 'Waves', default: 0.7 },
-      { id: 'wind', label: 'Sea breeze', default: 0.3 },
-      { id: 'drone', label: 'Deep', default: 0.25 },
+      { id: 'seagulls', label: 'Gulls', default: 0.18 },
+      { id: 'wind', label: 'Sea breeze', default: 0.28 },
+      { id: 'drone', label: 'Deep', default: 0.22 },
     ],
   },
   {
