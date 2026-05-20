@@ -541,7 +541,7 @@ const BUILDERS: Record<LayerId, Builder> = {
   bubbles:  sampleLayer('bubbles',  { gain: 0.75, lowpass: 1400 }, buildBubbles),
   water:    sampleLayer('water',    { gain: 0.9,  lowpass: 820 },  buildWater),
   fairy:    sampleLayer('fairy',    { gain: 0.72 },                buildFairy),
-  drone:    buildDrone,
+  drone:    sampleLayer('drone',    { gain: 0.55 },                buildDrone),
 }
 
 // Per-layer reverb send amounts — how much "space" each lives in.
