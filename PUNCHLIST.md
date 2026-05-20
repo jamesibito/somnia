@@ -179,6 +179,21 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [ ] iOS Safari real-device test (m4a fallback exists but never verified) —
       fallback chain audited in code, not yet device-tested.
 
+## Pass H++ — Player breathing fix (round 2)  ✅
+Owner's still-too-compressed feedback after Pass H+. Spread it out, fill the viewport.
+- [x] Orb 170→184px, SpiralMark 52→58, play button 68→74. Effectively back
+      to original Pass F sizes (or slightly bigger).
+- [x] Padding 54/26/32 → 60/28/36 (full original).
+- [x] Title marginBottom 22→30, orb marginBottom 24→32, transport
+      marginBottom 22→28. Layer-section paddingTop 18→24.
+- [x] Layer rows: gap 14→16, marginBottom 14→20 (last row 0), label width
+      72→78. Much more breathing room between sliders.
+- [x] Layer `section` now `flex: 1` so it fills remaining viewport — uses
+      the 4-layer soundscapes (Slow Tide, Fairy Forest) as the visual
+      benchmark. 2-layer soundscapes (Static Bloom, Deep Drift) inherit
+      more bottom slack on purpose — feels appropriately quiet for those.
+- [x] No scroll on any of the 8 soundscapes; player fills the screen.
+
 ## Pass H+ — Prototype polish (during Pass H site build)  ✅
 Out-of-band polish triggered by owner feedback while building the case study
 site. Caught a few items before they'd be lifted into the new site verbatim.
