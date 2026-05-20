@@ -66,7 +66,7 @@ export default function SoundscapePlayer() {
 
       <div className="screen-body">
         <div className="screen-enter" style={{
-          position: 'relative', padding: '56px 28px 36px',
+          position: 'relative', padding: '48px 24px 28px',
           minHeight: '100%', display: 'flex', flexDirection: 'column',
         }}>
           <TopBar
@@ -82,60 +82,59 @@ export default function SoundscapePlayer() {
             }
           />
 
-          {/* Title — no synthesis label */}
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          {/* Title */}
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <h1 style={{
               fontFamily: 'var(--font-serif)', fontWeight: 400,
-              fontSize: 30, color: 'var(--color-text)', letterSpacing: '-0.02em',
+              fontSize: 26, color: 'var(--color-text)', letterSpacing: '-0.02em',
             }}>
               {s.name}
             </h1>
-            <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', marginTop: 6 }}>
+            <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
               {s.tagline}
             </p>
           </div>
 
-          {/* Hero orb — compact */}
+          {/* Hero orb — tighter */}
           <div style={{
-            position: 'relative', width: 180, height: 180,
-            margin: '0 auto 28px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'relative', width: 140, height: 140,
+            margin: '0 auto 18px', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <div aria-hidden style={{
-              position: 'absolute', inset: 0, borderRadius: '50%',
+              position: 'absolute', inset: -18, borderRadius: '50%',
               border: '1px solid var(--color-accent)',
-              animation: playing ? 'breathe-ring 5s ease-in-out infinite' : 'none', opacity: 0.2,
+              animation: playing ? 'breathe-ring 5s ease-in-out infinite' : 'none', opacity: 0.18,
             }} />
             <div aria-hidden style={{
-              position: 'absolute', inset: 22, borderRadius: '50%',
+              position: 'absolute', inset: -6, borderRadius: '50%',
               border: '1px solid var(--color-accent)',
-              animation: playing ? 'breathe-ring 5s ease-in-out -1.8s infinite' : 'none', opacity: 0.3,
+              animation: playing ? 'breathe-ring 5s ease-in-out -1.8s infinite' : 'none', opacity: 0.26,
             }} />
             <div aria-hidden style={{
-              position: 'absolute', inset: 40, borderRadius: '50%',
+              position: 'absolute', inset: 16, borderRadius: '50%',
               background: 'radial-gradient(circle, rgba(155,118,255,0.45), transparent 70%)',
-              filter: 'blur(14px)',
+              filter: 'blur(12px)',
             }} />
-            <SpiralMark size={56} color="var(--color-accent)" strokeWidth={1} spinning={playing} />
+            <SpiralMark size={44} color="var(--color-accent)" strokeWidth={1} spinning={playing} />
           </div>
 
-          {/* Transport */}
-          <div style={{ marginBottom: 26 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          {/* Transport — timer inline with elapsed, tighter */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-muted)' }}>
                 {mm}:{ss}
               </span>
               <button
                 className="pressable"
                 onClick={() => setShowTimer(v => !v)}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}
               >
-                <Clock size={12} />
+                <Clock size={11} />
                 {audio.sleepTimer ? `${audio.sleepTimer}m left` : 'timer'}
               </button>
             </div>
 
-            {/* Progress bar */}
-            <div style={{ height: 2, background: 'var(--color-hair)', borderRadius: 2, overflow: 'hidden', marginBottom: 20 }}>
+            <div style={{ height: 2, background: 'var(--color-hair)', borderRadius: 2, overflow: 'hidden', marginBottom: 16 }}>
               <div style={{
                 height: '100%', background: 'var(--color-accent)',
                 width: audio.sleepTimer ? `${Math.min(100, (audio.elapsed / (audio.sleepTimer * 60)) * 100)}%` : '100%',
@@ -145,14 +144,14 @@ export default function SoundscapePlayer() {
             </div>
 
             {showTimer && (
-              <div className="rise" style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div className="rise" style={{ display: 'flex', gap: 7, marginBottom: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {TIMER_OPTS.map(m => (
                   <button
                     key={m}
                     className="pressable"
                     onClick={() => { audio.startSleepTimer(m); setShowTimer(false) }}
                     style={{
-                      padding: '7px 13px', borderRadius: 999, fontSize: 12,
+                      padding: '6px 12px', borderRadius: 999, fontSize: 11.5,
                       fontFamily: 'var(--font-mono)',
                       background: audio.sleepTimer === m ? 'var(--color-accent)' : 'var(--color-surface)',
                       color: audio.sleepTimer === m ? 'var(--color-accent-ink)' : 'var(--color-text-muted)',
@@ -165,44 +164,47 @@ export default function SoundscapePlayer() {
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 36 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32 }}>
               <button className="pressable focusable" aria-label="Previous" onClick={() => cycle(-1)}>
-                <SkipBack size={20} color="var(--color-text-muted)" strokeWidth={1.5} />
+                <SkipBack size={18} color="var(--color-text-muted)" strokeWidth={1.5} />
               </button>
               <button
                 className="pressable focusable"
                 aria-label={playing ? 'Pause' : 'Play'}
                 onClick={() => (isCurrent ? audio.toggle() : audio.play(s))}
                 style={{
-                  width: 72, height: 72, borderRadius: '50%',
+                  width: 62, height: 62, borderRadius: '50%',
                   background: 'var(--color-accent)', color: 'var(--color-accent-ink)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 12px 36px rgba(181,168,232,0.3), inset 0 1px 0 rgba(255,255,255,0.35)',
+                  boxShadow: '0 10px 30px rgba(181,168,232,0.3), inset 0 1px 0 rgba(255,255,255,0.35)',
                 }}
               >
                 {playing
-                  ? <Pause size={24} fill="var(--color-accent-ink)" stroke="var(--color-accent-ink)" />
-                  : <Play size={24} fill="var(--color-accent-ink)" stroke="var(--color-accent-ink)" style={{ marginLeft: 3 }} />}
+                  ? <Pause size={20} fill="var(--color-accent-ink)" stroke="var(--color-accent-ink)" />
+                  : <Play size={20} fill="var(--color-accent-ink)" stroke="var(--color-accent-ink)" style={{ marginLeft: 2 }} />}
               </button>
               <button className="pressable focusable" aria-label="Next" onClick={() => cycle(1)}>
-                <SkipForward size={20} color="var(--color-text-muted)" strokeWidth={1.5} />
+                <SkipForward size={18} color="var(--color-text-muted)" strokeWidth={1.5} />
               </button>
             </div>
           </div>
 
-          {/* Layer faders */}
-          <section style={{ borderTop: '1px solid var(--color-hair)', paddingTop: 20 }}>
+          {/* Layer faders — label inline with slider, no separate label row */}
+          <section style={{ borderTop: '1px solid var(--color-hair)', paddingTop: 14 }}>
             {s.layers.map(layer => (
-              <div key={layer.id} style={{ marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 13.5, color: 'var(--color-text-muted)', flex: 1 }}>{layer.label}</span>
-                </div>
+              <div key={layer.id} style={{
+                display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12,
+              }}>
+                <span style={{ fontSize: 12.5, color: 'var(--color-text-muted)', width: 64, flexShrink: 0 }}>
+                  {layer.label}
+                </span>
                 <input
                   type="range"
                   min={0} max={1} step={0.01}
                   value={audio.levels[layer.id] ?? 0}
                   onChange={e => audio.setLevel(layer.id, parseFloat(e.target.value))}
                   aria-label={`${layer.label} volume`}
+                  style={{ flex: 1 }}
                 />
               </div>
             ))}

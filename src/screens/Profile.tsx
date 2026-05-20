@@ -119,7 +119,7 @@ export default function Profile() {
         {/* Appearance */}
         <SectionTitle>Appearance</SectionTitle>
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
-          Pure Indigo is the default. Moonstone cools the night.
+          Two themes. Pick the one that feels right at night.
         </p>
         <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
           {THEMES.map(t => {
@@ -174,9 +174,9 @@ export default function Profile() {
             })}
           </div>
         </div>
-        <SettingToggle icon={<Volume2 size={16} />} label="UI sounds" sub="Off by default — silence is the respectful default" on={uiSounds} set={v => { setUiSounds(v); flash(v ? 'UI sounds on.' : 'UI sounds off.') }} />
-        <SettingToggle icon={<Moon size={16} />} label="Reduce motion" sub="Stills backgrounds, stops particle effects" on={!!prefs.reducedMotion} set={v => { setPrefs({ reducedMotion: v }); flash(v ? 'Motion reduced.' : 'Motion restored.') }} />
-        <SettingToggle icon={<Bell size={16} />} label="Bedtime nudge" sub={`One notification at ${fmtClock(prefs.bedtimeHour, prefs.bedtimeMinute)}`} on={bedtimeNudge} set={v => { setBedtimeNudge(v); flash(v ? 'Bedtime nudge on.' : 'Bedtime nudge off.') }} last />
+        <SettingToggle icon={<Volume2 size={16} />} label="UI sounds" sub="Subtle feedback sounds for interactions" on={uiSounds} set={v => { setUiSounds(v); flash(v ? 'UI sounds on.' : 'UI sounds off.') }} />
+        <SettingToggle icon={<Moon size={16} />} label="Reduce motion" sub="Pauses animations and particle effects" on={!!prefs.reducedMotion} set={v => { setPrefs({ reducedMotion: v }); flash(v ? 'Motion reduced.' : 'Motion restored.') }} />
+        <SettingToggle icon={<Bell size={16} />} label="Bedtime nudge" sub={`Reminder at ${fmtClock(prefs.bedtimeHour, prefs.bedtimeMinute)}`} on={bedtimeNudge} set={v => { setBedtimeNudge(v); flash(v ? 'Bedtime nudge on.' : 'Bedtime nudge off.') }} last />
 
         {/* Sleep goals — real, write to the plan */}
         <SectionTitle>Sleep goals</SectionTitle>
@@ -202,7 +202,7 @@ export default function Profile() {
         {/* Data & privacy — real behaviors */}
         <SectionTitle>Your data</SectionTitle>
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.55 }}>
-          Sleep and dream data lives on your device. Nothing is sold, ever.
+          Stored locally on this device. No account, no sync, no servers.
         </p>
         <NavRow
           icon={<Shield size={15} />}
@@ -271,7 +271,7 @@ export default function Profile() {
             </a>
           </div>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)', marginTop: 6, letterSpacing: '0.14em' }}>
-            SOMNIA · v0.3 · CONCEPT
+            SOMNIA · v0.4 · CONCEPT
           </p>
         </div>
       </Screen>

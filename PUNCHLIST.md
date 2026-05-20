@@ -107,7 +107,93 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [x] Folded-in particle tuning: dust less faint, fireflies denser +
       always-alive breathing glow.
 
+## Pass E — Polish (visual punch + side-by-side themes)  ✅ (merged to main)
+- [x] Rain particles type for Light Rainstorm (real falling streaks, not motes).
+- [x] Bolder per-soundscape palettes — first attempt at breaking the purple
+      monotony (revised harder in Pass G).
+- [x] SpiralMark gains a subtle glow + slow ~6s breath on splash and while a
+      soundscape plays. Stopped rotating (per feedback).
+- [x] `/compare.html` static page — two iframes side-by-side
+      (`?theme=indigo` vs `?theme=moon`, `?embed=1` suppresses dev switcher).
+      Linked from Profile colophon. URL `?theme=` param wins over stored pref.
+
+## Pass F — Cosmic, waves, audio, accessibility  ✅ (merged to main)
+- [x] **Cosmic** concept for Deep Drift — black void, tiny yellow stars, ~10%
+      shooting-star particles with bright head + tail gradient.
+- [x] **Waves** concept for Slow Tide — rolling sine curves drawn across width
+      via canvas path.
+- [x] `.screen-body` inner scroll layer — fixes backdrop cutting off on
+      scrollable screens. Atmosphere + field sit outside the scroll layer.
+- [x] **Reduce motion** as a real persisted toggle. `prefs.reducedMotion`
+      writes `data-reduced-motion` to `.phone-shell`; CSS rule mirrors the
+      `prefers-reduced-motion` media query block.
+- [x] SoundscapePlayer compressed (first attempt — refined further in Pass G).
+- [x] MeditatePlayer redesigned (first attempt — refined further in Pass G).
+- [x] Stage legend icons replace numbers on Last Night ("🌑 Deep · ✦ REM · ◌ Light").
+- [x] **Pixabay CC0 audio loops** — `rain · thunder · wind · fire · crickets ·
+      harp · bubbles · fairy · drone`. Engine still hybrid; falls back to synth
+      for `tide` + `water` (unsourced).
+- [x] Fairy Forest: replaced procedural `drone` "Glow" with a real `fairy`
+      layer ("Shimmer") backed by `fairy_soundscape_base.mp3`. Engine gains
+      `fairy` LayerId + `buildFairy()` procedural fallback.
+- [x] SoundscapeLibrary cards: SVG icon per soundscape (CloudRain / Leaf /
+      Waves / Flame / Radio / Moon / Sparkles / Droplets) replaces the `01/02`
+      number. Italic removed from card titles.
+
+## Pass G — Refine (player, meditation, palettes, audio mix)  ✅ (on branch `pass-g-refine`, pushed)
+- [x] **dust** locked as default particle concept on hero screens (Tonight,
+      GoodMorning). Per-soundscape concepts still apply inside their soundscape.
+- [x] `prefs.fieldDensity: 'off' | 'subtle' | 'standard'` — 3-chip segment
+      control in Profile › Appearance. Density baseline maps to 0 / 48 / 96
+      particles. Reduce-motion still wins (skips field regardless).
+- [x] **SoundscapePlayer compressed** — orb 180→140px, rings tightened,
+      SpiralMark 56→44px, layer faders now have label inline with slider
+      (saves ~48px). 4 layers fit on one screen without scrolling.
+- [x] **MeditatePlayer redesigned** — the orb IS the experience now. 180px main
+      orb + ambient glow + breathing ring border. Phase label + live breath
+      count (1,2,3,4…) inside the orb. Glow + ring intensity shift with phase.
+      Chapter segment bars + play button shrunk to thin strip at bottom — no
+      more "static-bars-at-bottom" dead-end feel.
+- [x] **Bolder palettes redux** — each soundscape now commits HARD to its hue.
+      Light Rainstorm steel blue, Cedar deep green, Slow Tide ocean teal,
+      Hearth ember orange, Fairy Forest magenta, Underwater teal-cyan,
+      Deep Drift near-void black. Zero purple bleed-through.
+- [x] **Audio: drone gets a file fallback** — `wind_drone.mp3` → `drone.ogg/m4a`;
+      engine now uses `sampleLayer('drone', ..., buildDrone)`. Cedar/Fairy/
+      Static/Deep Drift/Hearth all benefit.
+- [x] **Audio: richer fairy mix** — `fairy.ogg` rebuilt as `fairy_soundscape_base`
+      + `fairy_fly` + `fairy_fly2` layered at 0.38/0.28 volume, looped to 57s.
+- [x] **Profile copy rewritten** — "Off by default — silence is the respectful
+      default" → "Subtle feedback sounds for interactions"; "Nothing is sold,
+      ever" → "No account, no sync, no servers"; etc.
+- [x] **Version bumped** v0.3 → v0.4 in colophon.
+- [x] **Source MP3s out of git** (rain.mp3 was 23MB) — only `.ogg` + `.m4a`
+      tracked. README documents the unused/extra Pixabay files for future use.
+- [x] SoundscapeLibrary: SVG icons replace numbers, italic off card titles.
+- [x] Italic removed from SoundscapePlayer title.
+
+### Pass G — open / not done
+- [ ] **Source `tide.ogg` + `water.ogg`** — Slow Tide + Underwater still on
+      synth fallback.
+- [ ] `fairy_harp_ascending.mp3` is unused (alternate harp; could be a
+      `harp-2` layer or just stay archived).
+- [ ] iOS Safari real-device test (m4a fallback exists but never verified).
+
 ## Known-good (don't regress)
 - The loop is consequential (W1), the clock + night passage (W2), reactive
   atmosphere / breath / now-playing / generative field (W3). All CSS-var
   driven, reduced-motion safe, no heavy deps.
+- Player fits on one screen without scrolling (Pass G).
+- Meditation feels like a meditation (Pass G).
+- Each soundscape feels like its own place visually (Pass G).
+- Hybrid audio: app fully playable with zero files; auto-upgrades as files arrive.
+
+## Next-pass candidates (not started)
+See `DECISIONS.md` for context behind earlier calls. Candidates worth considering:
+- **Pass H — Case study site.** Probably the next move — see end of
+  CLAUDE.md / the summary section. Diminishing returns on prototype polish.
+- **Polish-only:** source the missing tide/water audio; iOS Safari sweep;
+  Sleep/Hypnogram visual upgrade; Onboarding compression.
+- **One Tier-C moment:** WebGL volumetric nebula as a single hero scene
+  somewhere (NightMode intro? case-study landing?). Only worth the deps if it
+  earns the hero moment.
