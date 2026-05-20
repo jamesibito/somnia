@@ -69,10 +69,10 @@ export default function Tonight() {
             <ChevronRight size={17} color="var(--color-text-faint)" style={{ alignSelf: 'center' }} />
           </div>
           <div style={{ marginTop: 22 }}><StageBar {...ln.stages} /></div>
-          <div style={{ display: 'flex', gap: 16, marginTop: 11 }}>
-            <Legend c="var(--color-accent)" label="Deep" v={ln.stages.deep} />
-            <Legend c="var(--color-accent-dim)" label="REM" v={ln.stages.rem} />
-            <Legend c="rgba(155,124,232,0.4)" label="Light" v={ln.stages.light} />
+          <div style={{ display: 'flex', gap: 14, marginTop: 11 }}>
+            <StageLegend icon="🌑" label="Deep" v={ln.stages.deep} c="var(--color-accent)" />
+            <StageLegend icon="✦" label="REM" v={ln.stages.rem} c="var(--color-accent-dim)" />
+            <StageLegend icon="◌" label="Light" v={ln.stages.light} c="rgba(155,124,232,0.5)" />
           </div>
         </section>
 
@@ -138,10 +138,10 @@ export default function Tonight() {
   )
 }
 
-function Legend({ c, label, v }: { c: string; label: string; v: number }) {
+function StageLegend({ icon, label, v, c }: { icon: string; label: string; v: number; c: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ width: 6, height: 6, borderRadius: 3, background: c }} />
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <span style={{ fontSize: 11, color: c, lineHeight: 1, userSelect: 'none' }}>{icon}</span>
       <span style={{ fontSize: 11, color: 'var(--color-text-muted)', letterSpacing: '0.02em' }}>{label}</span>
       <span style={{ fontSize: 11, color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>{v}%</span>
     </div>

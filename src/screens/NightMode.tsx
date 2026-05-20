@@ -107,6 +107,7 @@ export default function NightMode() {
         }} />
       </div>
 
+      <div className="screen-body">
       <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 36 }}>
 
         {phase === 'choose' && (
@@ -223,6 +224,7 @@ export default function NightMode() {
           </div>
         )}
       </div>
+      </div>{/* .screen-body */}
       {passing && (
         <TimeCompression
           onComplete={() => {

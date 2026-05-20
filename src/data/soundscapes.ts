@@ -103,10 +103,10 @@ export const SOUNDSCAPE_PALETTES: Record<string, SoundscapePalette> = {
   // hue that matches the audio's vibe (more overt than the rest of the app).
   'light-rainstorm': { b1: 'rgba(96,128,235,0.55)',  b2: 'rgba(70,96,200,0.5)',   b3: 'rgba(150,178,245,0.32)', tint: '#9FB6F2', concept: 'rain' },
   'cedar-forest':    { b1: 'rgba(70,150,120,0.5)',   b2: 'rgba(54,118,98,0.5)',   b3: 'rgba(120,190,150,0.3)',  tint: '#8FD8B0', concept: 'fireflies' },
-  'slow-tide':       { b1: 'rgba(40,130,200,0.55)',  b2: 'rgba(30,90,175,0.55)',  b3: 'rgba(110,185,225,0.32)', tint: '#6FC4E8', concept: 'bubbles' },
+  'slow-tide':       { b1: 'rgba(40,130,200,0.55)',  b2: 'rgba(30,90,175,0.55)',  b3: 'rgba(110,185,225,0.32)', tint: '#6FC4E8', concept: 'waves' },
   'hearth':          { b1: 'rgba(230,130,70,0.5)',   b2: 'rgba(190,80,70,0.48)',  b3: 'rgba(240,175,110,0.3)',  tint: '#F0A867', concept: 'embers' },
   'static-bloom':    { b1: 'rgba(155,118,255,0.5)',  b2: 'rgba(98,72,200,0.46)',  b3: 'rgba(181,168,232,0.3)',  tint: '#BEB0FF', concept: 'starfield' },
-  'deep-drift':      { b1: 'rgba(140,80,235,0.52)',  b2: 'rgba(92,52,185,0.55)',  b3: 'rgba(160,120,240,0.3)',  tint: '#A878F0', concept: 'constellation' },
+  'deep-drift':      { b1: 'rgba(10,4,30,0.9)',       b2: 'rgba(20,8,50,0.85)',    b3: 'rgba(60,30,120,0.25)',   tint: '#FFD87A', concept: 'cosmic' },
   'fairy-forest':    { b1: 'rgba(200,110,230,0.5)',  b2: 'rgba(150,80,210,0.5)',  b3: 'rgba(225,150,240,0.3)',  tint: '#E0A8F2', concept: 'fairies' },
   'underwater':      { b1: 'rgba(40,160,210,0.55)',  b2: 'rgba(30,110,190,0.55)', b3: 'rgba(90,200,225,0.32)',  tint: '#5CC8E0', concept: 'bubbles' },
 }

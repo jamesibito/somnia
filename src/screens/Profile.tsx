@@ -29,7 +29,6 @@ export default function Profile() {
   const streak = deriveStreak(mergedSessions(history), prefs)
 
   const [uiSounds, setUiSounds] = useState(false)
-  const [reduceMotion, setReduceMotion] = useState(false)
   const [bedtimeNudge, setBedtimeNudge] = useState(true)
   const [editing, setEditing] = useState<null | 'bedtime' | 'goal'>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -149,7 +148,7 @@ export default function Profile() {
         </div>
 
         <SettingToggle icon={<Volume2 size={16} />} label="UI sounds" sub="Off by default — silence is the respectful default" on={uiSounds} set={v => { setUiSounds(v); flash(v ? 'UI sounds on.' : 'UI sounds off.') }} />
-        <SettingToggle icon={<Moon size={16} />} label="Reduce motion" sub="Stills the drifting background" on={reduceMotion} set={v => { setReduceMotion(v); flash(v ? 'Motion reduced.' : 'Motion restored.') }} />
+        <SettingToggle icon={<Moon size={16} />} label="Reduce motion" sub="Stills backgrounds, stops particle effects" on={!!prefs.reducedMotion} set={v => { setPrefs({ reducedMotion: v }); flash(v ? 'Motion reduced.' : 'Motion restored.') }} />
         <SettingToggle icon={<Bell size={16} />} label="Bedtime nudge" sub={`One notification at ${fmtClock(prefs.bedtimeHour, prefs.bedtimeMinute)}`} on={bedtimeNudge} set={v => { setBedtimeNudge(v); flash(v ? 'Bedtime nudge on.' : 'Bedtime nudge off.') }} last />
 
         {/* Sleep goals — real, write to the plan */}

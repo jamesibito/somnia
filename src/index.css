@@ -93,13 +93,20 @@ input:focus, textarea:focus, button:focus { outline: none; }
 .screen {
   position: absolute;
   inset: 0;
+  overflow: hidden;        /* backdrop layers stay fixed — .screen-body scrolls */
+  background: var(--color-bg);
+}
+
+/* Scrollable content layer — atmosphere/field stay fixed behind it */
+.screen-body {
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  background: var(--color-bg);
+  scrollbar-width: none;
 }
-.screen::-webkit-scrollbar { display: none; }
-.screen { scrollbar-width: none; }
+.screen-body::-webkit-scrollbar { display: none; }
 
 .status-bar {
   position: absolute;
@@ -238,4 +245,11 @@ input[type="range"]::-moz-range-thumb {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* In-app reduce-motion pref — mirrors the OS media query behaviour */
+.phone-shell[data-reduced-motion] *, .phone-shell[data-reduced-motion] *::before, .phone-shell[data-reduced-motion] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }

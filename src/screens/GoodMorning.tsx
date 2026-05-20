@@ -47,6 +47,7 @@ export default function GoodMorning() {
   return (
     <div className="screen">
       <AtmosphereLayer variant="dawn" grain={0.05} />
+      <div className="screen-body">
       <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', padding: '76px 28px 40px', display: 'flex', flexDirection: 'column' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 30 }}>
@@ -161,6 +162,7 @@ export default function GoodMorning() {
           </div>
         )}
       </div>
+      </div>{/* .screen-body */}
       <div className="home-indicator" />
     </div>
   )

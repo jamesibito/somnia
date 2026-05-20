@@ -16,6 +16,8 @@ import { createContext, useContext, useState, useCallback, useEffect, type React
 export const FIELD_CONCEPTS = [
   'motes', 'dust', 'starfield', 'constellation',
   'embers', 'fireflies', 'bubbles', 'fairies', 'rain',
+  'cosmic',   // deep void starfield + shooting stars (Deep Drift)
+  'waves',    // rolling ocean sine waves (Slow Tide)
 ] as const
 export type FieldConcept = (typeof FIELD_CONCEPTS)[number]
 

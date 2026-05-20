@@ -28,7 +28,7 @@ import GoodMorning from './screens/GoodMorning'
 function ScrollReset() {
   const { pathname } = useLocation()
   useEffect(() => {
-    document.querySelector('.screen')?.scrollTo(0, 0)
+    document.querySelector('.screen-body')?.scrollTo(0, 0)
   }, [pathname])
   return null
 }

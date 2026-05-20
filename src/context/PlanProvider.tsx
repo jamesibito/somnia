@@ -24,6 +24,8 @@ export interface Prefs {
   onboarded: boolean
   /** opt-in personalization theme; 'indigo' is the default Pure Indigo */
   theme: 'indigo' | 'moon'
+  /** reduce motion + particle effects for accessibility / battery saving */
+  reducedMotion: boolean
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -37,6 +39,7 @@ const DEFAULT_PREFS: Prefs = {
   bedtimeAdjustMin: 0,
   onboarded: false,
   theme: 'indigo',
+  reducedMotion: false,
 }
 
 const KEY = 'somnia.prefs.v1'
@@ -138,6 +141,14 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     if (prefs.theme === 'moon') root.setAttribute('data-theme', 'moon')
     else root.removeAttribute('data-theme') // indigo default + any stale value
   }, [prefs.theme])
+
+  // Apply reduce-motion pref as a data attribute so CSS + JS can both read it.
+  useEffect(() => {
+    const shell = document.querySelector('.phone-shell') as HTMLElement | null
+    if (!shell) return
+    if (prefs.reducedMotion) shell.setAttribute('data-reduced-motion', '')
+    else shell.removeAttribute('data-reduced-motion')
+  }, [prefs.reducedMotion])
 
   const setPrefs = useCallback((patch: Partial<Prefs>) => {
     setPrefsState(prev => ({ ...prev, ...patch }))

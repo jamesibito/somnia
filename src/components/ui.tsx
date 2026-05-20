@@ -26,18 +26,22 @@ export function Screen({
 }) {
   return (
     <div className="screen">
+      {/* Atmosphere + field are fixed backdrop — outside the scroll layer */}
       <AtmosphereLayer variant={variant} grain={grain} reactive={reactive} />
       {field && <GenerativeField />}
-      <div
-        className="screen-enter"
-        style={{
-          position: 'relative',
-          minHeight: '100%',
-          padding: pad ? '64px 26px 0' : 0,
-          paddingBottom: tabSafe ? 112 : 40,
-        }}
-      >
-        {children}
+      {/* Scrollable content sits above the backdrop */}
+      <div className="screen-body">
+        <div
+          className="screen-enter"
+          style={{
+            position: 'relative',
+            minHeight: '100%',
+            padding: pad ? '64px 26px 0' : 0,
+            paddingBottom: tabSafe ? 112 : 40,
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   )
