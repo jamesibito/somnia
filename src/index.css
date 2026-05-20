@@ -17,9 +17,9 @@
   --color-accent-dim: #9B7CE8;
   --color-accent-ink: #10081F;
   --color-text: #EAE2FF;
-  --color-text-muted: #9B92C4;
-  --color-text-faint: #6B6494;
-  --color-hair: #221A40;
+  --color-text-muted: #AEA5D2;  /* bumped from #9B92C4 — readability pass H+ */
+  --color-text-faint: #877FB2;  /* bumped from #6B6494 — colophon was too dim */
+  --color-hair: #2A2148;        /* slight bump from #221A40 for legible dividers */
   /* Reserved warm — system/alerts ONLY, <5% surface area */
   --color-warn: #E8B8C0;
   --color-positive: #9FE8C4;
@@ -36,9 +36,9 @@
   --color-accent-dim: #9FB0D8;
   --color-accent-ink: #0A0F1C;
   --color-text: #E8ECF8;
-  --color-text-muted: #97A2C0;
-  --color-text-faint: #67708C;
-  --color-hair: #1F2540;
+  --color-text-muted: #AAB3CE;  /* bumped from #97A2C0 for readability parity */
+  --color-text-faint: #858EAB;  /* bumped from #67708C */
+  --color-hair: #272E4A;        /* bumped from #1F2540 */
   --color-warn: #E8B8C0;
   --color-positive: #9FE8C4;
 }

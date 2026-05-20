@@ -6,6 +6,41 @@ land. New entries on top.
 
 ---
 
+## D-27 · Pass H+ — Text contrast bump for readability
+**Picked:** Bumped `--color-text-muted` (#9B92C4 → #AEA5D2) and `--color-text-faint`
+(#6B6494 → #877FB2) in both Pure Indigo and Moonstone themes.
+**Why:** Owner feedback that small text felt unreadable, especially the colophon
+copy and "Shaped for…" hero subline. Old `--color-text-faint` was below WCAG AA
+for small body text against `--color-bg`.
+**Trade-off:** Slightly less "ethereal mood" hierarchy, but legibility wins. The
+brand still feels indigo-bathed; the contrast just clears the bar.
+
+## D-26 · Pass H+ — Waves get foam particles, cosmic gets the void back
+**Picked:** Two field tweaks:
+- **Waves:** hybrid of ~4 sine-curve wave lines + ~30 small foam dots drifting
+  rightward with the current. Foam gives the field actual visible motion the
+  static sine curves couldn't carry alone.
+- **Cosmic:** density 2.2 → 0.7 (211 particles → ~67), shooting-star ratio 10%
+  → 4% (rarer = more impactful), 18% of stars now "big" (brighter, 1.4–2.8px) to
+  carry the void without crowding.
+**Rejected:** Plain sine-only waves (felt flat, "oscilloscope" was the owner's
+read). 211-particle cosmic (looked like a sparkle texture, not a void).
+**Learning:** A particle concept fails when it loses its METAPHOR. Waves need
+foam to read as water. A void needs emptiness to read as void. Density is part
+of meaning, not just texture.
+
+## D-25 · Pass H+ — Player breathability over aggressive compression
+**Picked:** Reverted Pass G's aggressive player shrink. Orb back to 170px
+(was 140; original 180), SpiralMark 52 (was 44, original 56), play button 68
+(was 62, original 72), padding 54/26/32 (was 48/24/28). Kept the inline
+label-beside-slider layer format because it earned its space-savings.
+**Why:** Owner feedback — the orb felt cramped and the controls felt
+proportionally small to the screen. The fix-it goal was "fit on one screen
+without scrolling," not "shrink everything." Inline sliders saved ~96px on a
+4-layer player, which alone fixes the overflow.
+**Learning:** When solving a fit problem, find the ONE element that's
+disproportionate to the goal. Don't shrink everything by a uniform 30%.
+
 ## D-24 · Pass G+ — Slow Tide gains a fourth layer (Gulls)
 **Picked:** Added a `seagulls` LayerId with `buildSeagulls()` procedural fallback,
 slotted in as Slow Tide's 4th layer at a deliberately quiet 0.18 default.

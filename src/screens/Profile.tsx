@@ -243,7 +243,7 @@ export default function Profile() {
           </p>
           <p style={{ fontSize: 12, color: 'var(--color-text-faint)', textAlign: 'center', lineHeight: 1.6, maxWidth: 280 }}>
             Started as a 2D-Visualization brand project, evolved into a sleep,
-            meditation &amp; white-noise product concept.
+            meditation, white-noise &amp; soundscape product concept.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 4 }}>
             <a
@@ -252,22 +252,6 @@ export default function Profile() {
               style={{ fontSize: 12.5, color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: 5 }}
             >
               Portfolio <span style={{ fontSize: 11 }}>↗</span>
-            </a>
-            <span style={{ width: 1, height: 12, background: 'var(--color-hair)' }} />
-            <a
-              href="https://github.com/jamesibito/somnia" target="_blank" rel="noopener noreferrer"
-              className="pressable focusable"
-              style={{ fontSize: 12.5, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}
-            >
-              Source <span style={{ fontSize: 11 }}>↗</span>
-            </a>
-            <span style={{ width: 1, height: 12, background: 'var(--color-hair)' }} />
-            <a
-              href="/compare.html" target="_blank" rel="noopener noreferrer"
-              className="pressable focusable"
-              style={{ fontSize: 12.5, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}
-            >
-              Themes <span style={{ fontSize: 11 }}>↗</span>
             </a>
           </div>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)', marginTop: 6, letterSpacing: '0.14em' }}>
