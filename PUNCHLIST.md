@@ -179,6 +179,31 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [ ] iOS Safari real-device test (m4a fallback exists but never verified) —
       fallback chain audited in code, not yet device-tested.
 
+## Pass H+++++ — Fix reverb-send "ghost layer" bleed  ✅
+Owner caught: even with all layer sliders at 0, sound was still audible.
+Looked like wind ghosting through.
+
+- [x] **Root cause:** Each layer connects to TWO paths inside its builder
+      — a dry path (through `layer.gain`, the slider-controlled gain) and
+      a wet path (through `layer.send`, the reverb send). `setLayer(v)` was
+      only scaling the dry gain. The send gain stayed pinned at `SEND[id]`
+      (0.2–0.5 depending on layer) regardless of slider position. So when
+      a user dragged Wind to 0:
+      • dry path → silent ✓
+      • wet path → still pumping wind noise into the reverb bus →
+        reverb tail bleeds back through to speakers → "ghost wind"
+- [x] **Fix:** `setLayer(v)` now scales BOTH paths together:
+      `layer.gain.gain → v * 0.9`, `layer.send.gain → v * SEND[id]`.
+      Layer at v=0 → both paths silent. The convolver's 3-second IR
+      naturally decays once no fresh signal feeds it.
+- [x] **Bonus:** Wet/dry ratio now stays consistent at all volumes. Before
+      this, quiet layers were disproportionately reverb-heavy because the
+      send was at full while the dry was reduced.
+- [x] **Pairs with the cross-soundscape switching fix from Pass H++++**:
+      that fix calls `setLayer(id, 0)` to silence the previous soundscape's
+      unique layers; that now properly mutes the reverb sends too, so
+      switching sounds is a clean transition with no lingering reverb.
+
 ## Pass H++++ — Split filters + fix sound-switching layering  ✅
 Owner asked the right question: should L/H pass be separate? Yes.
 Owner also caught: switching soundscapes was leaving previous-soundscape
