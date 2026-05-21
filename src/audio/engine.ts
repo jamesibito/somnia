@@ -657,8 +657,9 @@ export function setLayer(id: LayerId, volume: number) {
   let layer = layers.get(id)
   if (!layer) {
     if (volume <= 0) return
+    // Build the layer at zero on BOTH paths. Both ramp up below.
     const gain = c.createGain(); gain.gain.value = 0
-    const send = c.createGain(); send.gain.value = SEND[id]
+    const send = c.createGain(); send.gain.value = 0
     gain.connect(busInput!)
     send.connect(reverbBus!)
     const stop = BUILDERS[id](c, gain, send)
@@ -666,7 +667,12 @@ export function setLayer(id: LayerId, volume: number) {
     layers.set(id, layer)
   }
   const v = Math.max(0, Math.min(1, volume))
+  // CRITICAL: scale the reverb send WITH the dry gain. Each layer's source
+  // is tapped into BOTH paths inside the builder; if we only mute the dry
+  // path, the source keeps pumping into the reverb bus and you hear a
+  // reverb-only "ghost" of the layer with the slider at zero.
   layer.gain.gain.setTargetAtTime(v * 0.9, c.currentTime, 0.08)
+  layer.send.gain.setTargetAtTime(v * SEND[id], c.currentTime, 0.08)
 }
 
 export function stopAll() {
