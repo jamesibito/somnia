@@ -41,6 +41,20 @@ without scrolling," not "shrink everything." Inline sliders saved ~96px on a
 **Learning:** When solving a fit problem, find the ONE element that's
 disproportionate to the goal. Don't shrink everything by a uniform 30%.
 
+## D-25 · Pass H++++ — Split bipolar Tone into two independent filters
+**Picked:** Two sliders — `Soften` (0..1 lowpass, cuts shrill highs) and
+`De-rumble` (0..1 highpass, cuts low rumble). Owner asked the right question
+during review: should they be separate?
+**Rejected:** The original bipolar `Tone` slider (-1..+1, single bar).
+**Why I had it wrong first:** Single bipolar suggested "you can warm OR
+brighten, never both." But the filters are physically two independent biquads
+in series — there's no physical reason a user can't engage both at once
+(e.g. soften an OK soundscape AND cut its rumble). Forcing them onto one
+bar was UI simplification at the cost of actual capability.
+**Learning:** When two controls are physically independent, give them
+independent UI even if the combined-control feels tidier. The "tidier"
+choice was less honest about the engine.
+
 ## D-24 · Pass G+ — Slow Tide gains a fourth layer (Gulls)
 **Picked:** Added a `seagulls` LayerId with `buildSeagulls()` procedural fallback,
 slotted in as Slow Tide's 4th layer at a deliberately quiet 0.18 default.

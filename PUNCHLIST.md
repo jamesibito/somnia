@@ -179,6 +179,27 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [ ] iOS Safari real-device test (m4a fallback exists but never verified) —
       fallback chain audited in code, not yet device-tested.
 
+## Pass H++++ — Split filters + fix sound-switching layering  ✅
+Owner asked the right question: should L/H pass be separate? Yes.
+Owner also caught: switching soundscapes was leaving previous-soundscape
+layers ringing on top of the new ones.
+- [x] **Bipolar Tone → two independent sliders.** Single Tone implied
+      "warm OR brighten, never both" but the filters are physically
+      independent. Now there's `Soften` (0..1 lowpass) and `De-rumble`
+      (0..1 highpass), with Waves and Mountain icons. Tooltips spell
+      out what each does for non-audio-experts.
+- [x] **Engine:** `setTone` removed; `setSoftenHighs` + `setCutRumble`
+      added. Same exponential frequency curves as before.
+- [x] **AudioProvider:** `tone` state → `softenHighs` + `cutRumble`.
+- [x] **Bug fix: cross-soundscape layering.** `play()` now silences the
+      previous soundscape's UNIQUE layers (layers not in the new one)
+      before applying new levels. Shared layer IDs (e.g. wind, drone)
+      smoothly cross-fade in place via the engine's setTargetAtTime
+      smoothing. Layered ghost-sound issue gone.
+- [x] Budget: now 3 global rows (Master + Soften + De-rumble) instead of 2.
+      Title mb 22→18, transport mb 22→18, seam divider tighter
+      (10/16 → 6/12) to fit on 4-layer soundscapes.
+
 ## Pass H+++ — Player Master + Tone + label-wrap fix  ✅
 Owner feedback after Pass H++: missing global controls; long labels wrap.
 - [x] **Master volume** slider added at the top of the layer section, with a

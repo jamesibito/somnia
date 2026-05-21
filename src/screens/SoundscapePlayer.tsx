@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Pause, Play, SkipBack, SkipForward, Clock, X, Volume2, SlidersHorizontal } from 'lucide-react'
+import { Pause, Play, SkipBack, SkipForward, Clock, X, Volume2, Waves as WavesIcon, Mountain } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 import GenerativeField from '../components/GenerativeField'
 import SpiralMark from '../components/SpiralMark'
@@ -83,7 +83,7 @@ export default function SoundscapePlayer() {
           />
 
           {/* Title — generous breathing */}
-          <div style={{ textAlign: 'center', marginBottom: 22 }}>
+          <div style={{ textAlign: 'center', marginBottom: 18 }}>
             <h1 style={{
               fontFamily: 'var(--font-serif)', fontWeight: 400,
               fontSize: 30, color: 'var(--color-text)', letterSpacing: '-0.02em',
@@ -119,7 +119,7 @@ export default function SoundscapePlayer() {
           </div>
 
           {/* Transport — timer inline with elapsed */}
-          <div style={{ marginBottom: 22 }}>
+          <div style={{ marginBottom: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-muted)' }}>
                 {mm}:{ss}
@@ -201,25 +201,33 @@ export default function SoundscapePlayer() {
             <SliderRow
               label="Master"
               icon={<Volume2 size={14} color="var(--color-text-muted)" strokeWidth={1.6} />}
-              tooltip="Overall output volume"
+              tooltip="Overall output volume."
               value={audio.master}
               min={0} max={1}
               onChange={audio.setMaster}
             />
-            {/* Tone control — bipolar -1..+1, center = neutral */}
+            {/* Soften shrill highs (lowpass) */}
             <SliderRow
-              label="Tone"
-              icon={<SlidersHorizontal size={14} color="var(--color-text-muted)" strokeWidth={1.6} />}
-              tooltip="Drag left to soften shrill highs (warmer). Drag right to cut low rumble (lighter). Centred is neutral."
-              value={audio.tone}
-              min={-1} max={1}
-              onChange={audio.setTone}
-              bipolar
+              label="Soften"
+              icon={<WavesIcon size={14} color="var(--color-text-muted)" strokeWidth={1.6} />}
+              tooltip="Roll off shrill high frequencies. Right = warmer / less hiss / easier on tired ears."
+              value={audio.softenHighs}
+              min={0} max={1}
+              onChange={audio.setSoftenHighs}
+            />
+            {/* Cut low rumble (highpass) */}
+            <SliderRow
+              label="De-rumble"
+              icon={<Mountain size={14} color="var(--color-text-muted)" strokeWidth={1.6} />}
+              tooltip="Cut low rumble + sub-bass. Right = lighter / clearer / less chesty."
+              value={audio.cutRumble}
+              min={0} max={1}
+              onChange={audio.setCutRumble}
             />
             {/* Visual seam between global mix and per-layer faders */}
             <div style={{
               height: 1, background: 'var(--color-hair)',
-              margin: '10px 0 16px',
+              margin: '6px 0 12px',
             }} />
             {s.layers.map((layer, i) => (
               <div key={layer.id} style={{
@@ -251,15 +259,12 @@ export default function SoundscapePlayer() {
 }
 
 /**
- * SliderRow — used for the Master and Tone global mix controls.
- * Same visual rhythm as layer rows (icon + label + slider), but with an
- * info-icon hint and optional bipolar centerline for tone-style ranges.
- * Tooltip uses the native `title` attribute (hover on desktop; reasonable
- * for a phone-frame demo viewed on a laptop). For touch users the help
- * text is also exposed via aria-label.
+ * SliderRow — used for the Master + Soften + De-rumble global mix controls.
+ * Same visual rhythm as layer rows (icon + label + slider). Tooltip uses
+ * native `title` (hover on desktop; aria-label covers touch / screen readers).
  */
 function SliderRow({
-  label, icon, tooltip, value, min, max, onChange, bipolar = false,
+  label, icon, tooltip, value, min, max, onChange,
 }: {
   label: string
   icon: React.ReactNode
@@ -268,13 +273,12 @@ function SliderRow({
   min: number
   max: number
   onChange: (v: number) => void
-  bipolar?: boolean
 }) {
   return (
     <div
       title={tooltip}
       style={{
-        display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14,
+        display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12,
       }}
     >
       <span style={{
@@ -285,29 +289,14 @@ function SliderRow({
         {icon}
         <span style={{ whiteSpace: 'nowrap' }}>{label}</span>
       </span>
-      <div style={{ flex: 1, position: 'relative' }}>
-        {/* Bipolar: faint centerline tick so users see the neutral midpoint */}
-        {bipolar && (
-          <span
-            aria-hidden
-            style={{
-              position: 'absolute', left: '50%', top: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 1, height: 8,
-              background: 'var(--color-text-faint)',
-              opacity: 0.5, pointerEvents: 'none',
-            }}
-          />
-        )}
-        <input
-          type="range"
-          min={min} max={max} step={0.01}
-          value={value}
-          onChange={e => onChange(parseFloat(e.target.value))}
-          aria-label={`${label} — ${tooltip}`}
-          style={{ width: '100%', display: 'block' }}
-        />
-      </div>
+      <input
+        type="range"
+        min={min} max={max} step={0.01}
+        value={value}
+        onChange={e => onChange(parseFloat(e.target.value))}
+        aria-label={`${label} — ${tooltip}`}
+        style={{ flex: 1, display: 'block' }}
+      />
     </div>
   )
 }

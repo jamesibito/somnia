@@ -16,15 +16,18 @@ interface AudioState {
   elapsed: number
   /** Master output gain (0..1). Applied to the engine immediately. */
   master: number
-  /** Bipolar tone control (-1..+1). Negative = warmer; positive = lighter. */
-  tone: number
+  /** Soften shrill highs (0..1). 0 = flat. 1 = heavily warmed lowpass. */
+  softenHighs: number
+  /** Cut low rumble (0..1). 0 = flat. 1 = bass cleared by highpass. */
+  cutRumble: number
   /** Begin a soundscape (must originate from a user gesture). */
   play: (s: SoundscapeDef) => Promise<void>
   toggle: () => Promise<void>
   stop: () => void
   setLevel: (layerId: string, v: number) => void
   setMaster: (v: number) => void
-  setTone: (v: number) => void
+  setSoftenHighs: (v: number) => void
+  setCutRumble: (v: number) => void
   startSleepTimer: (minutes: number) => void
   sleepTimer: number | null
 }
@@ -42,8 +45,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [levels, setLevels] = useState<Record<string, number>>({})
   const [elapsed, setElapsed] = useState(0)
   const [sleepTimer, setSleepTimer] = useState<number | null>(null)
-  const [master, setMasterState] = useState(0.82)   // matches engine default
-  const [tone, setToneState] = useState(0)          // neutral
+  const [master, setMasterState] = useState(0.82)        // matches engine default
+  const [softenHighs, setSoftenHighsState] = useState(0) // flat
+  const [cutRumble, setCutRumbleState] = useState(0)     // flat
   const tick = useRef<number | null>(null)
   const timerRef = useRef<number | null>(null)
 
@@ -53,10 +57,16 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     engine.setMaster(clamped)
   }, [])
 
-  const setTone = useCallback((v: number) => {
-    const clamped = Math.max(-1, Math.min(1, v))
-    setToneState(clamped)
-    engine.setTone(clamped)
+  const setSoftenHighs = useCallback((v: number) => {
+    const clamped = Math.max(0, Math.min(1, v))
+    setSoftenHighsState(clamped)
+    engine.setSoftenHighs(clamped)
+  }, [])
+
+  const setCutRumble = useCallback((v: number) => {
+    const clamped = Math.max(0, Math.min(1, v))
+    setCutRumbleState(clamped)
+    engine.setCutRumble(clamped)
   }, [])
 
   const startTick = useCallback(() => {
@@ -73,6 +83,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const play = useCallback(async (s: SoundscapeDef) => {
     await engine.ensureRunning()
+    // Smoothly fade out the previous soundscape's UNIQUE layers (layers not
+    // shared with the new soundscape). Shared layers (e.g. wind, drone) get
+    // their new target volume applied below — engine's setLayer cross-fades
+    // existing layers in place, so shared layers transition smoothly while
+    // soundscape-specific ones (rain, harp, etc.) fade to silence.
+    if (current) {
+      const newIds = new Set(s.layers.map(l => l.id))
+      current.layers.forEach(l => {
+        if (!newIds.has(l.id)) engine.setLayer(l.id, 0)
+      })
+    }
     const initial: Record<string, number> = {}
     s.layers.forEach(l => { initial[l.id] = l.default })
     setCurrent(s)
@@ -81,7 +102,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     applyLevels(s, initial)
     setPlaying(true)
     startTick()
-  }, [applyLevels, startTick])
+  }, [applyLevels, startTick, current])
 
   const toggle = useCallback(async () => {
     if (!current) return
@@ -125,8 +146,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{
       playing, current, levels, elapsed,
-      master, tone,
-      play, toggle, stop, setLevel, setMaster, setTone,
+      master, softenHighs, cutRumble,
+      play, toggle, stop, setLevel, setMaster, setSoftenHighs, setCutRumble,
       startSleepTimer, sleepTimer,
     }}>
       {children}
