@@ -14,11 +14,17 @@ interface AudioState {
   current: SoundscapeDef | null
   levels: Record<string, number>
   elapsed: number
+  /** Master output gain (0..1). Applied to the engine immediately. */
+  master: number
+  /** Bipolar tone control (-1..+1). Negative = warmer; positive = lighter. */
+  tone: number
   /** Begin a soundscape (must originate from a user gesture). */
   play: (s: SoundscapeDef) => Promise<void>
   toggle: () => Promise<void>
   stop: () => void
   setLevel: (layerId: string, v: number) => void
+  setMaster: (v: number) => void
+  setTone: (v: number) => void
   startSleepTimer: (minutes: number) => void
   sleepTimer: number | null
 }
@@ -36,8 +42,22 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [levels, setLevels] = useState<Record<string, number>>({})
   const [elapsed, setElapsed] = useState(0)
   const [sleepTimer, setSleepTimer] = useState<number | null>(null)
+  const [master, setMasterState] = useState(0.82)   // matches engine default
+  const [tone, setToneState] = useState(0)          // neutral
   const tick = useRef<number | null>(null)
   const timerRef = useRef<number | null>(null)
+
+  const setMaster = useCallback((v: number) => {
+    const clamped = Math.max(0, Math.min(1, v))
+    setMasterState(clamped)
+    engine.setMaster(clamped)
+  }, [])
+
+  const setTone = useCallback((v: number) => {
+    const clamped = Math.max(-1, Math.min(1, v))
+    setToneState(clamped)
+    engine.setTone(clamped)
+  }, [])
 
   const startTick = useCallback(() => {
     if (tick.current) return
@@ -105,7 +125,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{
       playing, current, levels, elapsed,
-      play, toggle, stop, setLevel,
+      master, tone,
+      play, toggle, stop, setLevel, setMaster, setTone,
       startSleepTimer, sleepTimer,
     }}>
       {children}
