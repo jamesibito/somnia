@@ -179,6 +179,27 @@ Each pass = its own commit(s), typecheck + preview verify, push.
 - [ ] iOS Safari real-device test (m4a fallback exists but never verified) —
       fallback chain audited in code, not yet device-tested.
 
+## Pass H+++ — Player Master + Tone + label-wrap fix  ✅
+Owner feedback after Pass H++: missing global controls; long labels wrap.
+- [x] **Master volume** slider added at the top of the layer section, with a
+      Volume2 icon prefix and native-title tooltip.
+- [x] **Tone** slider added (bipolar -1..+1): left = warmer (lowpass cuts
+      shrill highs progressively to ~700 Hz at -1), right = lighter (highpass
+      cuts rumble progressively to ~350 Hz at +1), center = neutral. Faint
+      centerline tick draws the eye to the neutral midpoint. Tooltip explains
+      the bidirectional behaviour for non-sound-experts.
+- [x] Engine: new `setTone(value)` API. Tone filters (highpass + lowpass in
+      series, both flat at neutral) inserted between `busInput` and
+      `lowBoost` so both dry + reverb-return are filtered consistently.
+- [x] AudioProvider: tracks `master` (default 0.82, matches engine) and
+      `tone` (default 0), exposes `setMaster` + `setTone` setters.
+- [x] **Label wrap fix:** layer labels now `whiteSpace: nowrap` with
+      `text-overflow: ellipsis` and width bumped 78→96px. "Light drizzle",
+      "Forest hum", "Distant tide", "Sea breeze" no longer wrap onto two
+      lines.
+- [x] Budget: title mb 30→22 + orb mb 32→24 + layer row mb 20→16 to fit
+      the two new global rows on 4-layer soundscapes without scroll.
+
 ## Pass H++ — Player breathing fix (round 2)  ✅
 Owner's still-too-compressed feedback after Pass H+. Spread it out, fill the viewport.
 - [x] Orb 170→184px, SpiralMark 52→58, play button 68→74. Effectively back

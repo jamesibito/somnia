@@ -37,6 +37,10 @@ let reverbBus: GainNode | null = null
 let analyser: AnalyserNode | null = null
 let ampData: Uint8Array | null = null
 let noiseBuffer: AudioBuffer | null = null
+// Bipolar Tone control: one low-pass + one high-pass in series, each
+// effectively bypassed at neutral. setTone(-1..+1) scales them.
+let toneLP: BiquadFilterNode | null = null
+let toneHP: BiquadFilterNode | null = null
 const layers = new Map<LayerId, Layer>()
 let started = false
 
@@ -68,6 +72,20 @@ function audioCtx(): AudioContext {
 
   busInput = ctx.createGain()
 
+  // ── Tone control (user-adjustable) ──
+  // High-pass and low-pass in series, both essentially flat at neutral.
+  // setTone(-1..+1) scales them: negative = lowpass cuts highs (warmer),
+  // positive = highpass cuts lows (lighter). Inserted between busInput and
+  // the master shaping chain so both dry + reverb-return are filtered.
+  toneHP = ctx.createBiquadFilter()
+  toneHP.type = 'highpass'
+  toneHP.frequency.value = 20      // essentially bypass
+  toneHP.Q.value = 0.7
+  toneLP = ctx.createBiquadFilter()
+  toneLP.type = 'lowpass'
+  toneLP.frequency.value = 20000   // essentially bypass
+  toneLP.Q.value = 0.7
+
   // ── Analyser tap (sink only — never routed onward, cannot alter audio) ──
   analyser = ctx.createAnalyser()
   analyser.fftSize = 256
@@ -87,7 +105,10 @@ function audioCtx(): AudioContext {
   convolver.connect(reverbReturn)
   reverbReturn.connect(busInput)
 
-  busInput.connect(lowBoost)
+  // Signal: busInput → toneHP → toneLP → lowBoost → warmth → glue → master → out
+  busInput.connect(toneHP)
+  toneHP.connect(toneLP)
+  toneLP.connect(lowBoost)
   lowBoost.connect(warmth)
   warmth.connect(glue)
   glue.connect(master)
@@ -593,6 +614,32 @@ export async function ensureRunning() {
 
 export function setMaster(v: number) {
   if (master && ctx) master.gain.setTargetAtTime(v, ctx.currentTime, 0.05)
+}
+
+/**
+ * Bipolar tone control. value ∈ [-1, +1].
+ *   value < 0 → low-pass cuts highs progressively (warmer, less shrill)
+ *               at -1: cutoff ~700Hz (heavily warmed)
+ *   value > 0 → high-pass cuts lows progressively (lighter, less rumble)
+ *               at +1: cutoff ~350Hz (cleared of bass)
+ *   value = 0 → both filters effectively bypass (~flat)
+ */
+export function setTone(value: number) {
+  if (!toneHP || !toneLP || !ctx) return
+  const v = Math.max(-1, Math.min(1, value))
+  const t = ctx.currentTime
+  // Exponential curves feel more linear to the ear than literal frequency Hz.
+  if (v <= 0) {
+    // Active low-pass; high-pass parked at floor
+    toneHP.frequency.setTargetAtTime(20, t, 0.05)
+    const cutoff = 20000 * Math.pow(700 / 20000, -v)
+    toneLP.frequency.setTargetAtTime(cutoff, t, 0.05)
+  } else {
+    // Active high-pass; low-pass parked at ceiling
+    toneLP.frequency.setTargetAtTime(20000, t, 0.05)
+    const cutoff = 20 * Math.pow(350 / 20, v)
+    toneHP.frequency.setTargetAtTime(cutoff, t, 0.05)
+  }
 }
 
 /** Current normalized loudness 0..1 for visuals. Cheap; safe to poll per frame. */
