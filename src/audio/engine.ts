@@ -37,8 +37,9 @@ let reverbBus: GainNode | null = null
 let analyser: AnalyserNode | null = null
 let ampData: Uint8Array | null = null
 let noiseBuffer: AudioBuffer | null = null
-// Bipolar Tone control: one low-pass + one high-pass in series, each
-// effectively bypassed at neutral. setTone(-1..+1) scales them.
+// Independent filters in series, both effectively bypassed by default.
+// toneLP is driven by setSoftenHighs(0..1) — cuts shrill highs.
+// toneHP is driven by setCutRumble(0..1)   — cuts low rumble.
 let toneLP: BiquadFilterNode | null = null
 let toneHP: BiquadFilterNode | null = null
 const layers = new Map<LayerId, Layer>()
@@ -617,29 +618,28 @@ export function setMaster(v: number) {
 }
 
 /**
- * Bipolar tone control. value ∈ [-1, +1].
- *   value < 0 → low-pass cuts highs progressively (warmer, less shrill)
- *               at -1: cutoff ~700Hz (heavily warmed)
- *   value > 0 → high-pass cuts lows progressively (lighter, less rumble)
- *               at +1: cutoff ~350Hz (cleared of bass)
- *   value = 0 → both filters effectively bypass (~flat)
+ * Soften shrill highs. value ∈ [0, 1].
+ *   0 → flat (LP cutoff ~20kHz, effectively bypass)
+ *   1 → heavily warmed (LP cutoff ~700Hz)
+ * Exponential frequency curve feels more linear to the ear than literal Hz.
  */
-export function setTone(value: number) {
-  if (!toneHP || !toneLP || !ctx) return
-  const v = Math.max(-1, Math.min(1, value))
-  const t = ctx.currentTime
-  // Exponential curves feel more linear to the ear than literal frequency Hz.
-  if (v <= 0) {
-    // Active low-pass; high-pass parked at floor
-    toneHP.frequency.setTargetAtTime(20, t, 0.05)
-    const cutoff = 20000 * Math.pow(700 / 20000, -v)
-    toneLP.frequency.setTargetAtTime(cutoff, t, 0.05)
-  } else {
-    // Active high-pass; low-pass parked at ceiling
-    toneLP.frequency.setTargetAtTime(20000, t, 0.05)
-    const cutoff = 20 * Math.pow(350 / 20, v)
-    toneHP.frequency.setTargetAtTime(cutoff, t, 0.05)
-  }
+export function setSoftenHighs(value: number) {
+  if (!toneLP || !ctx) return
+  const v = Math.max(0, Math.min(1, value))
+  const cutoff = 20000 * Math.pow(700 / 20000, v)
+  toneLP.frequency.setTargetAtTime(cutoff, ctx.currentTime, 0.05)
+}
+
+/**
+ * Cut low rumble. value ∈ [0, 1].
+ *   0 → flat (HP cutoff ~20Hz, effectively bypass)
+ *   1 → cleared of bass (HP cutoff ~350Hz)
+ */
+export function setCutRumble(value: number) {
+  if (!toneHP || !ctx) return
+  const v = Math.max(0, Math.min(1, value))
+  const cutoff = 20 * Math.pow(350 / 20, v)
+  toneHP.frequency.setTargetAtTime(cutoff, ctx.currentTime, 0.05)
 }
 
 /** Current normalized loudness 0..1 for visuals. Cheap; safe to poll per frame. */
