@@ -160,9 +160,9 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             // fast falling streaks, slight wind shear; r = streak length
             particles.push({
               x: Math.random() * W, y: Math.random() * H,
-              vx: -0.5 - Math.random() * 0.4,
-              vy: 5.5 + Math.random() * 5,
-              r: 12 + Math.random() * 22,
+              vx: -0.8 - Math.random() * 0.6,
+              vy: 12 + Math.random() * 9,
+              r: 16 + Math.random() * 26,
               a: 0.12 + Math.random() * 0.22, ph,
             }); break
           case 'cosmic': {

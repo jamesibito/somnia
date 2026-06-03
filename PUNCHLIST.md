@@ -3,6 +3,20 @@
 Final polish before pausing the project. Split into focused passes (not one go).
 Each pass = its own commit(s), typecheck + preview verify, push.
 
+## Pass H2 — Experience-quality uplift  ⏳ in progress (2026-06-03)
+Bring the prototype up to the experience site's visual bar (the experience
+outshone mobile). Started with the core the user prioritized: selector + player.
+- [x] **Soundscape selector** rebuilt as living-field discs (circular, real
+      GenerativeField + identity glyph + tinted glow, 2-up grid). Replaces the
+      old vertical list. `SoundscapeLibrary.tsx`.
+- [x] **Player faders tinted per soundscape** + filled track (reads
+      `--slider-accent` = palette tint; matches the experience). `SoundscapePlayer`
+      + `index.css` range styles.
+- [x] **Rain sped up** — `GenerativeField` rain `vy` 5.5–10.5 → 12–21, longer
+      streaks + more wind shear, so it reads as real rain (the experience's
+      waterfall-shader fix never touched this particle field).
+- [ ] Remaining screens to the same bar (Tonight, Meditate, NightMode, GoodMorning).
+
 ## Decisions
 - **Italics: keep, scoped to the media/dream-title register only** (soundscape
   names, meditation titles, dream-journal titles, "Rest, deliberately."). They
