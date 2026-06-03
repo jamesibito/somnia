@@ -2,10 +2,11 @@ import { useNavigate } from 'react-router-dom'
 import { Screen, Eyebrow, Display } from '../components/ui'
 import TabBar from '../components/TabBar'
 import SpiralMark from '../components/SpiralMark'
+import GenerativeField from '../components/GenerativeField'
 import { SOUNDSCAPES, getPalette } from '../data/soundscapes'
 import { useAudio } from '../context/AudioProvider'
 import {
-  Play, CloudRain, Leaf, Waves, Flame,
+  CloudRain, Leaf, Waves, Flame,
   Radio, Moon, Sparkles, Droplets,
   type LucideProps,
 } from 'lucide-react'
@@ -22,6 +23,12 @@ const SOUNDSCAPE_ICONS: Record<string, ComponentType<LucideProps>> = {
   'underwater':      Droplets,
 }
 
+/**
+ * Soundscape library — living-field discs (ported from the experience site's
+ * selector). Each soundscape is a circular disc holding its real particle field
+ * + a thin identity glyph + a tinted glow; the playing one stays lit. Tap a disc
+ * to open its player + mixer.
+ */
 export default function SoundscapeLibrary() {
   const navigate = useNavigate()
   const { current, playing } = useAudio()
@@ -35,13 +42,14 @@ export default function SoundscapeLibrary() {
         </header>
 
         <Display size={32} style={{ marginBottom: 6 }}>Sound</Display>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginBottom: 28 }}>
-          Built in real time. Every layer is synthesized — mix it your way.
+        <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginBottom: 30 }}>
+          Step into one and the room takes its colour. Every layer is yours to mix.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 16, rowGap: 22 }}>
           {SOUNDSCAPES.map((s) => {
             const active = current?.id === s.id
+            const isPlaying = active && playing
             const pal = getPalette(s.id)
             const Icon = SOUNDSCAPE_ICONS[s.id]
             return (
@@ -49,40 +57,59 @@ export default function SoundscapeLibrary() {
                 key={s.id}
                 className="pressable focusable"
                 onClick={() => navigate('/soundscape/' + s.id)}
+                aria-label={`${s.name} — ${s.tagline}`}
                 style={{
-                  textAlign: 'left',
-                  padding: 18,
-                  borderRadius: 18,
-                  background: active ? 'rgba(181,168,232,0.1)' : 'var(--color-surface)',
-                  border: `1px solid ${active ? 'var(--color-accent)' : 'var(--color-hair)'}`,
-                  display: 'flex', alignItems: 'center', gap: 16,
+                  background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
                 }}
               >
-                <div style={{
-                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-                  background: `radial-gradient(circle at 30% 30%, ${pal.b1}, ${pal.b2})`,
-                  boxShadow: `inset 0 0 0 1px ${pal.tint}33`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  position: 'relative', overflow: 'hidden',
-                }}>
-                  {active && playing ? (
-                    <Bars />
-                  ) : (
-                    <Play size={16} fill="var(--color-text)" stroke="var(--color-text)" style={{ opacity: 0.85 }} />
-                  )}
-                </div>
-                <div style={{ flex: 1 }}>
+                {/* Disc */}
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1' }}>
+                  {/* Glow */}
+                  <div aria-hidden style={{
+                    position: 'absolute', inset: '-12%', borderRadius: '50%',
+                    background: `radial-gradient(circle, ${pal.tint}55 0%, transparent 68%)`,
+                    opacity: isPlaying ? 1 : 0.5,
+                    transition: 'opacity 500ms ease',
+                  }} />
+                  {/* Disc body with living field */}
                   <div style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 18, color: 'var(--color-text)', marginBottom: 3,
+                    position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden',
+                    border: `1px solid ${active ? pal.tint : 'rgba(255,255,255,0.12)'}`,
+                    background: `radial-gradient(circle at 50% 38%, ${pal.tint}26 0%, rgba(10,4,32,0.6) 72%)`,
+                    boxShadow: isPlaying
+                      ? `0 0 26px ${pal.tint}55, inset 0 0 18px ${pal.tint}22`
+                      : 'inset 0 0 14px rgba(0,0,0,0.4)',
+                    transition: 'border-color 400ms ease, box-shadow 400ms ease',
                   }}>
+                    <div style={{ position: 'absolute', inset: 0 }}>
+                      <GenerativeField concept={pal.concept} tint={pal.tint} density={18} />
+                    </div>
+                    {Icon && (
+                      <div aria-hidden style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
+                        <Icon
+                          size={26}
+                          color={pal.tint}
+                          strokeWidth={1.3}
+                          style={{
+                            opacity: active ? 0.95 : 0.6,
+                            filter: 'drop-shadow(0 1px 5px rgba(10,4,32,0.85))',
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Label */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--color-text)', lineHeight: 1.15 }}>
                     {s.name}
                   </div>
-                  <div style={{ fontSize: 12.5, color: 'var(--color-text-muted)' }}>{s.tagline}</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--color-text-faint)', marginTop: 2 }}>
+                    {isPlaying ? 'now playing' : s.tagline}
+                  </div>
                 </div>
-                {Icon && (
-                  <Icon size={16} color="var(--color-text-faint)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
-                )}
               </button>
             )
           })}
@@ -90,19 +117,5 @@ export default function SoundscapeLibrary() {
       </Screen>
       <TabBar />
     </>
-  )
-}
-
-function Bars() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 16 }}>
-      {[0.5, 1, 0.7, 0.9].map((h, i) => (
-        <span key={i} style={{
-          width: 2.5, background: 'var(--color-text)', borderRadius: 1,
-          height: `${h * 100}%`,
-          animation: `breathe ${0.8 + i * 0.2}s ease-in-out infinite`,
-        }} />
-      ))}
-    </div>
   )
 }
