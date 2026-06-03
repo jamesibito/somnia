@@ -3,6 +3,21 @@
 Final polish before pausing the project. Split into focused passes (not one go).
 Each pass = its own commit(s), typecheck + preview verify, push.
 
+## Pass H3 — Real guided-meditation audio  (2026-06-03)
+- [x] The three available meditations now play **real guided-voice tracks**
+      (re-encoded mono 64k, `public/audio/meditations/<id>.mp3`). Source:
+      Internet Archive "PowerfulMindfulnessMeditation" (Open Source Audio /
+      Community collection) — Deep Relaxation → Letting Go of the Day, Fall
+      Asleep → A Body of Water, Ease Anxiety → Four Counts to Quiet. Titles +
+      minutes + chapters adjusted to match the real durations (~10–11 min).
+- [x] `MeditatePlayer` plays the track via an `<audio>` element; clock, chapter
+      progress, and completion now come from real `currentTime`/`duration`
+      (synthetic timer kept as fallback for tracks without audio). Play/pause
+      drives the element; the engine ambient bed is skipped when a voice track
+      has its own.
+- Narrators are still the demo's fictional names (the archive uploads are
+  anonymous) — believable placeholder, swap if real talent is recorded.
+
 ## Pass H2 — Experience-quality uplift  (2026-06-03)
 Bring the prototype up to the experience site's visual bar (the experience
 outshone mobile). Core the owner prioritised: selector + player.

@@ -36,12 +36,22 @@ export default function MeditatePlayer() {
   const tick = useRef<number | null>(null)
   const phaseTimer = useRef<number | null>(null)
   const countTimer = useRef<number | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [dur, setDur] = useState(0)
+  const [ended, setEnded] = useState(false)
 
-  const total = (m?.minutes ?? 8) * 60
-  const done = t >= total
+  // Available meditations play a real guided-voice track; clock + completion
+  // come from the <audio> element. Others fall back to the synthetic timer.
+  const hasAudio = !!m?.audio
+  const total = hasAudio ? (dur || (m?.minutes ?? 10) * 60) : (m?.minutes ?? 8) * 60
+  const done = hasAudio ? ended : t >= total
 
-  // Ambient audio bed
+  // Reset transport when switching between meditations.
+  useEffect(() => { setT(0); setEnded(false); setDur(0); setPlaying(true) }, [id])
+
+  // Ambient audio bed — only when there's no guided-voice track of its own.
   useEffect(() => {
+    if (hasAudio) return
     let active = true
     engine.ensureRunning().then(() => {
       if (!active) return
@@ -49,14 +59,21 @@ export default function MeditatePlayer() {
       engine.setLayer('tide', 0.14)
     })
     return () => { active = false; engine.stopAll() }
-  }, [])
+  }, [hasAudio])
 
-  // Timer tick
+  // Synthetic timer tick (only when no real audio is driving the clock).
   useEffect(() => {
-    if (!playing || done) { if (tick.current) clearInterval(tick.current); return }
+    if (hasAudio || !playing || done) { if (tick.current) clearInterval(tick.current); return }
     tick.current = window.setInterval(() => setT(x => Math.min(total, x + 1)), 1000)
     return () => { if (tick.current) clearInterval(tick.current) }
-  }, [playing, done, total])
+  }, [hasAudio, playing, done, total])
+
+  // Drive the real guided-voice element from the play/pause state.
+  useEffect(() => {
+    const a = audioRef.current
+    if (!a || !hasAudio) return
+    if (playing && !done) { a.play().catch(() => {}) } else { a.pause() }
+  }, [playing, done, hasAudio])
 
   // Mark session when done
   useEffect(() => { if (done) session.markMeditationDone() }, [done, session])
@@ -147,6 +164,17 @@ export default function MeditatePlayer() {
     <div className="screen">
       <AtmosphereLayer variant="calm" grain={0.05} reactive />
       <GenerativeField concept="constellation" tint="rgba(181,168,232,0.6)" density={40} />
+
+      {hasAudio && (
+        <audio
+          ref={audioRef}
+          src={m.audio}
+          preload="metadata"
+          onLoadedMetadata={e => setDur(Math.floor(e.currentTarget.duration || 0))}
+          onTimeUpdate={e => setT(Math.floor(e.currentTarget.currentTime))}
+          onEnded={() => setEnded(true)}
+        />
+      )}
 
       <div className="screen-body">
         <div style={{
