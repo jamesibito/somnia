@@ -24,6 +24,7 @@ import Alarm from './screens/Alarm'
 import Profile from './screens/Profile'
 import NightMode from './screens/NightMode'
 import GoodMorning from './screens/GoodMorning'
+import SelectorTester from './screens/SelectorTester'
 
 function ScrollReset() {
   const { pathname } = useLocation()
@@ -61,6 +62,8 @@ export default function App() {
               <Route path="/journal/:id" element={<JournalEntry />} />
               <Route path="/alarm" element={<Alarm />} />
               <Route path="/profile" element={<Profile />} />
+              {/* Parked A/B/C selector comparison for user testing (not in nav) */}
+              <Route path="/selector-test" element={<SelectorTester />} />
             </Routes>
           </PhoneFrame>
         </FieldConceptProvider>
