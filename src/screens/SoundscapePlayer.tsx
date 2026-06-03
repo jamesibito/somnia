@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Pause, Play, SkipBack, SkipForward, Clock, X, Volume2, Waves as WavesIcon, Mountain } from 'lucide-react'
+import { Pause, Play, SkipBack, SkipForward, Clock, X } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 import GenerativeField from '../components/GenerativeField'
+import Fader from '../components/Fader'
 import SpiralMark from '../components/SpiralMark'
 import { TopBar } from '../components/ui'
 import { useAudio } from '../context/AudioProvider'
@@ -195,117 +196,29 @@ export default function SoundscapePlayer() {
               which reads as appropriately quiet for those moods. */}
           <section style={{
             flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
-            borderTop: '1px solid var(--color-hair)', paddingTop: 18,
-            // Tint every fader in this player to the soundscape (matches the
-            // experience site); read by index.css via --slider-accent.
-            ['--slider-accent' as string]: pal.tint,
+            gap: 13, borderTop: '1px solid var(--color-hair)', paddingTop: 18,
           }}>
-            {/* Master volume */}
-            <SliderRow
-              label="Master"
-              icon={<Volume2 size={14} color="var(--color-text-muted)" strokeWidth={1.6} />}
-              tooltip="Overall output volume."
-              value={audio.master}
-              min={0} max={1}
-              onChange={audio.setMaster}
-            />
-            {/* Soften shrill highs (lowpass) */}
-            <SliderRow
-              label="Soften"
-              icon={<WavesIcon size={14} color="var(--color-text-muted)" strokeWidth={1.6} />}
-              tooltip="Roll off shrill high frequencies. Right = warmer / less hiss / easier on tired ears."
-              value={audio.softenHighs}
-              min={0} max={1}
-              onChange={audio.setSoftenHighs}
-            />
-            {/* Cut low rumble (highpass) */}
-            <SliderRow
-              label="De-rumble"
-              icon={<Mountain size={14} color="var(--color-text-muted)" strokeWidth={1.6} />}
-              tooltip="Cut low rumble + sub-bass. Right = lighter / clearer / less chesty."
-              value={audio.cutRumble}
-              min={0} max={1}
-              onChange={audio.setCutRumble}
-            />
-            {/* Visual seam between global mix and per-layer faders */}
-            <div style={{
-              height: 1, background: 'var(--color-hair)',
-              margin: '6px 0 12px',
-            }} />
-            {s.layers.map((layer, i) => (
-              <div key={layer.id} style={{
-                display: 'flex', alignItems: 'center', gap: 16,
-                marginBottom: i === s.layers.length - 1 ? 0 : 16,
-              }}>
-                <span style={{
-                  fontSize: 13.5, color: 'var(--color-text-muted)',
-                  width: 96, flexShrink: 0, whiteSpace: 'nowrap',
-                  overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>
-                  {layer.label}
-                </span>
-                <input
-                  type="range"
-                  min={0} max={1} step={0.01}
-                  value={audio.levels[layer.id] ?? 0}
-                  onChange={e => audio.setLevel(layer.id, parseFloat(e.target.value))}
-                  aria-label={`${layer.label} volume`}
-                  style={{ flex: 1, background: fillTrack((audio.levels[layer.id] ?? 0) * 100) }}
-                />
-              </div>
+            {/* Per-layer faders — tinted to the soundscape */}
+            {s.layers.map(layer => (
+              <Fader
+                key={layer.id}
+                label={layer.label}
+                tint={pal.tint}
+                value={audio.levels[layer.id] ?? 0}
+                onChange={v => audio.setLevel(layer.id, v)}
+              />
             ))}
+
+            {/* Visual seam between layers and the global tone controls */}
+            <div style={{ height: 1, background: 'var(--color-hair)', margin: '3px 0' }} />
+
+            {/* Global tone — master + the two filters, neutral lavender */}
+            <Fader label="Volume" tint="var(--color-accent-bright)" value={audio.master} onChange={audio.setMaster} />
+            <Fader label="Soften" tint="var(--color-accent)" value={audio.softenHighs} onChange={audio.setSoftenHighs} />
+            <Fader label="De-rumble" tint="var(--color-accent)" value={audio.cutRumble} onChange={audio.setCutRumble} />
           </section>
         </div>
       </div>
     </div>
   )
-}
-
-/**
- * SliderRow — used for the Master + Soften + De-rumble global mix controls.
- * Same visual rhythm as layer rows (icon + label + slider). Tooltip uses
- * native `title` (hover on desktop; aria-label covers touch / screen readers).
- */
-function SliderRow({
-  label, icon, tooltip, value, min, max, onChange,
-}: {
-  label: string
-  icon: React.ReactNode
-  tooltip: string
-  value: number
-  min: number
-  max: number
-  onChange: (v: number) => void
-}) {
-  return (
-    <div
-      title={tooltip}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12,
-      }}
-    >
-      <span style={{
-        display: 'flex', alignItems: 'center', gap: 7,
-        fontSize: 13.5, color: 'var(--color-text-muted)',
-        width: 96, flexShrink: 0,
-      }}>
-        {icon}
-        <span style={{ whiteSpace: 'nowrap' }}>{label}</span>
-      </span>
-      <input
-        type="range"
-        min={min} max={max} step={0.01}
-        value={value}
-        onChange={e => onChange(parseFloat(e.target.value))}
-        aria-label={`${label} — ${tooltip}`}
-        style={{ flex: 1, display: 'block', background: fillTrack(((value - min) / (max - min)) * 100) }}
-      />
-    </div>
-  )
-}
-
-/** Filled-track gradient for a fader — tinted left of the thumb, hairline right. */
-function fillTrack(pct: number): string {
-  const p = Math.max(0, Math.min(100, pct))
-  return `linear-gradient(to right, var(--slider-accent, var(--color-accent)) ${p}%, var(--color-hair) ${p}%)`
 }
