@@ -196,6 +196,9 @@ export default function SoundscapePlayer() {
           <section style={{
             flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
             borderTop: '1px solid var(--color-hair)', paddingTop: 18,
+            // Tint every fader in this player to the soundscape (matches the
+            // experience site); read by index.css via --slider-accent.
+            ['--slider-accent' as string]: pal.tint,
           }}>
             {/* Master volume */}
             <SliderRow
@@ -247,7 +250,7 @@ export default function SoundscapePlayer() {
                   value={audio.levels[layer.id] ?? 0}
                   onChange={e => audio.setLevel(layer.id, parseFloat(e.target.value))}
                   aria-label={`${layer.label} volume`}
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, background: fillTrack((audio.levels[layer.id] ?? 0) * 100) }}
                 />
               </div>
             ))}
@@ -295,8 +298,14 @@ function SliderRow({
         value={value}
         onChange={e => onChange(parseFloat(e.target.value))}
         aria-label={`${label} — ${tooltip}`}
-        style={{ flex: 1, display: 'block' }}
+        style={{ flex: 1, display: 'block', background: fillTrack(((value - min) / (max - min)) * 100) }}
       />
     </div>
   )
+}
+
+/** Filled-track gradient for a fader — tinted left of the thumb, hairline right. */
+function fillTrack(pct: number): string {
+  const p = Math.max(0, Math.min(100, pct))
+  return `linear-gradient(to right, var(--slider-accent, var(--color-accent)) ${p}%, var(--color-hair) ${p}%)`
 }
