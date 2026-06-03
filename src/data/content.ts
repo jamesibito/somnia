@@ -9,6 +9,8 @@ export interface Meditation {
   description: string
   chapters: { title: string; at: number }[]
   available: boolean
+  /** Guided-voice track for available meditations (served from /public). */
+  audio?: string
 }
 
 export const MEDITATIONS: Meditation[] = [
@@ -16,45 +18,48 @@ export const MEDITATIONS: Meditation[] = [
     id: 'letting-go',
     title: 'Letting Go of the Day',
     narrator: 'Aiyana Brooks',
-    minutes: 8,
+    minutes: 11,
     category: 'Wind-down',
     description: 'A slow unclenching. We set down what the day asked of us, one thing at a time, and make the body heavy.',
     chapters: [
       { title: 'Arriving', at: 0 },
-      { title: 'The breath settles', at: 90 },
-      { title: 'Releasing the day', at: 240 },
-      { title: 'Into stillness', at: 400 },
+      { title: 'The breath settles', at: 110 },
+      { title: 'Releasing the day', at: 280 },
+      { title: 'Into stillness', at: 470 },
     ],
     available: true,
+    audio: '/audio/meditations/letting-go.mp3',
   },
   {
     id: 'body-of-water',
     title: 'A Body of Water',
     narrator: 'Aiyana Brooks',
-    minutes: 12,
+    minutes: 10,
     category: 'Sleep',
     description: 'A guided descent. The body becomes water, then the water becomes still, then the stillness becomes sleep.',
     chapters: [
       { title: 'The surface', at: 0 },
-      { title: 'Sinking', at: 180 },
-      { title: 'The deep', at: 420 },
-      { title: 'No edges', at: 600 },
+      { title: 'Sinking', at: 150 },
+      { title: 'The deep', at: 360 },
+      { title: 'No edges', at: 520 },
     ],
     available: true,
+    audio: '/audio/meditations/body-of-water.mp3',
   },
   {
     id: 'four-counts',
     title: 'Four Counts to Quiet',
     narrator: 'Dev Okafor',
-    minutes: 6,
+    minutes: 10,
     category: 'Calm',
-    description: 'A breath pattern for a racing mind. Box breathing, paced and unhurried, until the noise drops out.',
+    description: 'For a racing mind. Settle the breath, ease the tension, and let the noise drop out.',
     chapters: [
       { title: 'Finding the rhythm', at: 0 },
-      { title: 'Holding', at: 150 },
-      { title: 'The quiet after', at: 300 },
+      { title: 'Settling', at: 190 },
+      { title: 'The quiet after', at: 410 },
     ],
     available: true,
+    audio: '/audio/meditations/four-counts.mp3',
   },
   { id: 'the-long-exhale', title: 'The Long Exhale', narrator: 'Dev Okafor', minutes: 10, category: 'Wind-down', description: 'Extending the out-breath until the nervous system follows.', chapters: [], available: false },
   { id: 'still-lake', title: 'Still Lake at Dawn', narrator: 'Mira Sol', minutes: 9, category: 'Morning', description: 'A gentle return. For waking without being startled into the day.', chapters: [], available: false },
