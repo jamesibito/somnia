@@ -3,19 +3,26 @@
 Final polish before pausing the project. Split into focused passes (not one go).
 Each pass = its own commit(s), typecheck + preview verify, push.
 
-## Pass H2 — Experience-quality uplift  ⏳ in progress (2026-06-03)
+## Pass H2 — Experience-quality uplift  (2026-06-03)
 Bring the prototype up to the experience site's visual bar (the experience
-outshone mobile). Started with the core the user prioritized: selector + player.
-- [x] **Soundscape selector** rebuilt as living-field discs (circular, real
-      GenerativeField + identity glyph + tinted glow, 2-up grid). Replaces the
-      old vertical list. `SoundscapeLibrary.tsx`.
-- [x] **Player faders tinted per soundscape** + filled track (reads
-      `--slider-accent` = palette tint; matches the experience). `SoundscapePlayer`
-      + `index.css` range styles.
+outshone mobile). Core the owner prioritised: selector + player.
+- [x] **Soundscape selector — condensed living-field tiles.** Shared
+      `SoundscapeSelector` (`SelectorGrid`) renders the picker; `SoundscapeLibrary`
+      ships variant **tiles** (rounded-rect texture tiles, 2-up, glyph + name on a
+      scrim, press-and-hold/hover → tinted border-glow). Far less scroll than the
+      full circles. The A/B/C exploration (tiles / circles / rows) is parked at
+      **`/selector-test`** for later user testing (not in nav).
+- [x] **Player faders → experience-quality `Fader`** (custom-drawn track/fill/thumb
+      with glow + a live % readout, transparent native input on top for drag/a11y).
+      Layers tint to the soundscape; Volume/Soften/De-rumble stay neutral lavender.
+      Replaces the native range inputs. `Fader.tsx` + `SoundscapePlayer`.
 - [x] **Rain sped up** — `GenerativeField` rain `vy` 5.5–10.5 → 12–21, longer
-      streaks + more wind shear, so it reads as real rain (the experience's
-      waterfall-shader fix never touched this particle field).
-- [ ] Remaining screens to the same bar (Tonight, Meditate, NightMode, GoodMorning).
+      streaks + more wind shear (the experience's waterfall-shader fix never
+      touched this particle field). *(landed in the prior pass-h merge)*
+- [x] **Sleep hypnogram** — flat accent line → filled gradient area under the curve
+      + a glowing brighter line. `Sleep.tsx`.
+- Other app screens (Tonight, NightMode, MeditatePlayer, GoodMorning) were audited
+  and are already at the bar — no rewrites needed.
 
 ## Decisions
 - **Italics: keep, scoped to the media/dream-title register only** (soundscape

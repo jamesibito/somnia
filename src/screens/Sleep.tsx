@@ -156,12 +156,28 @@ function Hypnogram({ seed }: { seed: number }) {
     d += ` H${x} V${yFor(l)}`
     d += ` H${x + step}`
   })
+  // Close the line down to the baseline so the area under it can be filled.
+  const fillD = `${d} L${W} ${H} L0 ${H} Z`
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} aria-hidden style={{ display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} aria-hidden style={{ display: 'block', overflow: 'visible' }}>
+      <defs>
+        <linearGradient id="hypFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.34" />
+          <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
       {[0, 1, 2, 3].map(l => (
         <line key={l} x1={0} x2={W} y1={yFor(l)} y2={yFor(l)} stroke="var(--color-hair)" strokeWidth={1} />
       ))}
-      <path d={d} fill="none" stroke="var(--color-accent)" strokeWidth={1.6} strokeLinejoin="round" />
+      <path d={fillD} fill="url(#hypFill)" stroke="none" />
+      <path
+        d={d}
+        fill="none"
+        stroke="var(--color-accent-bright)"
+        strokeWidth={1.6}
+        strokeLinejoin="round"
+        style={{ filter: 'drop-shadow(0 0 4px rgba(181,168,232,0.45))' }}
+      />
     </svg>
   )
 }
