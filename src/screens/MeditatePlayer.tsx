@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Pause, Play } from 'lucide-react'
+import { Pause, Play, Rewind, FastForward } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 import GenerativeField from '../components/GenerativeField'
 import { TopBar } from '../components/ui'
@@ -138,6 +138,17 @@ export default function MeditatePlayer() {
     raf = requestAnimationFrame(frame)
     return () => { cancelAnimationFrame(raf); shell.style.setProperty('--breath', '0') }
   }, [playing, done])
+
+  const seek = (delta: number) => {
+    const max = total || 0
+    if (hasAudio && audioRef.current) {
+      const a = audioRef.current
+      a.currentTime = Math.max(0, Math.min(max || a.duration || 0, a.currentTime + delta))
+      setT(Math.floor(a.currentTime))
+    } else {
+      setT(x => Math.max(0, Math.min(max, x + delta)))
+    }
+  }
 
   if (!m) return null
 
@@ -312,9 +323,17 @@ export default function MeditatePlayer() {
               }} />
             </div>
 
-            {/* Play / Pause */}
+            {/* Transport — rewind 15s · play/pause · forward 15s */}
             {!done && (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 30 }}>
+                <button
+                  className="pressable focusable"
+                  onClick={() => seek(-15)}
+                  aria-label="Back 15 seconds"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}
+                >
+                  <Rewind size={20} strokeWidth={1.6} />
+                </button>
                 <button
                   className="pressable focusable"
                   onClick={() => setPlaying(p => !p)}
@@ -329,6 +348,14 @@ export default function MeditatePlayer() {
                   {playing
                     ? <Pause size={20} fill="var(--color-accent-ink)" stroke="var(--color-accent-ink)" />
                     : <Play size={20} fill="var(--color-accent-ink)" stroke="var(--color-accent-ink)" style={{ marginLeft: 2 }} />}
+                </button>
+                <button
+                  className="pressable focusable"
+                  onClick={() => seek(15)}
+                  aria-label="Forward 15 seconds"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}
+                >
+                  <FastForward size={20} strokeWidth={1.6} />
                 </button>
               </div>
             )}

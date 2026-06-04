@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Pause, Play, SkipBack, SkipForward, Clock, X, Heart } from 'lucide-react'
+import { Pause, Play, SkipBack, SkipForward, Clock, X, Heart, ChevronUp, ChevronDown } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 import GenerativeField from '../components/GenerativeField'
 import Fader from '../components/Fader'
@@ -10,6 +10,10 @@ import { useAudio } from '../context/AudioProvider'
 import { getSoundscape, getPalette, SOUNDSCAPES } from '../data/soundscapes'
 
 const TIMER_OPTS = [15, 30, 45, 60, 90]
+
+// Faint fractal-noise grain — laid over the hero orb's glow so the pulses read
+// as organic light rather than a clean CSS gradient.
+const GRAIN = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
 
 // ─── Saved mixes (your default preset per soundscape) ───────────────────────
 const PRESET_KEY = 'somnia.presets.v1'
@@ -34,6 +38,7 @@ export default function SoundscapePlayer() {
   const pal = getPalette(s?.id)
   const [showTimer, setShowTimer] = useState(false)
   const [faved, setFaved] = useState(false)
+  const [mixerExpanded, setMixerExpanded] = useState(false)
 
   // Auto-start this soundscape, then apply the saved mix (your default preset)
   // if one exists for it — otherwise the soundscape's defaults stand.
@@ -105,7 +110,7 @@ export default function SoundscapePlayer() {
 
       <div className="screen-body">
         <div className="screen-enter" style={{
-          position: 'relative', padding: '56px 24px 22px',
+          position: 'relative', padding: '46px 22px 18px',
           height: '100%', display: 'flex', flexDirection: 'column',
         }}>
           <TopBar
@@ -121,44 +126,52 @@ export default function SoundscapePlayer() {
             }
           />
 
-          {/* Title — generous breathing */}
-          <div style={{ textAlign: 'center', marginBottom: 18 }}>
+          {/* Title — shifted up + tighter so the orb + mixer get room to breathe */}
+          <div style={{ textAlign: 'center', marginBottom: 14 }}>
             <h1 style={{
               fontFamily: 'var(--font-serif)', fontWeight: 400,
-              fontSize: 30, color: 'var(--color-text)', letterSpacing: '-0.02em',
+              fontSize: 27, color: 'var(--color-text)', letterSpacing: '-0.02em',
             }}>
               {s.name}
             </h1>
-            <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginTop: 6 }}>
+            <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', marginTop: 5 }}>
               {s.tagline}
             </p>
           </div>
 
-          {/* Hero orb — full original size; mb shaved 32→24 to budget Master+Tone */}
+          {/* Hero orb — pulses tinted to the soundscape, with a faint grain so
+              they blend like real light rather than a clean gradient. */}
           <div style={{
-            position: 'relative', width: 184, height: 184,
-            margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'relative', width: 168, height: 168,
+            margin: '0 auto 18px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
           }}>
             <div aria-hidden style={{
               position: 'absolute', inset: 0, borderRadius: '50%',
-              border: '1px solid var(--color-accent)',
-              animation: playing ? 'breathe-ring 5s ease-in-out infinite' : 'none', opacity: 0.22,
+              border: `1px solid ${pal.tint}`,
+              animation: playing ? 'breathe-ring 5s ease-in-out infinite' : 'none', opacity: 0.28,
             }} />
             <div aria-hidden style={{
-              position: 'absolute', inset: 22, borderRadius: '50%',
-              border: '1px solid var(--color-accent)',
-              animation: playing ? 'breathe-ring 5s ease-in-out -1.8s infinite' : 'none', opacity: 0.3,
+              position: 'absolute', inset: 20, borderRadius: '50%',
+              border: `1px solid ${pal.tint}`,
+              animation: playing ? 'breathe-ring 5s ease-in-out -1.8s infinite' : 'none', opacity: 0.38,
             }} />
             <div aria-hidden style={{
-              position: 'absolute', inset: 42, borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(155,118,255,0.5), transparent 70%)',
+              position: 'absolute', inset: 38, borderRadius: '50%',
+              background: `radial-gradient(circle, ${pal.tint}cc, rgba(155,118,255,0.32) 45%, transparent 72%)`,
               filter: 'blur(14px)',
             }} />
-            <SpiralMark size={58} color="var(--color-accent)" strokeWidth={1} spinning={playing} />
+            {/* Grain overlay on the glow — soft-light, very subtle */}
+            <div aria-hidden style={{
+              position: 'absolute', inset: 28, borderRadius: '50%', overflow: 'hidden',
+              backgroundImage: GRAIN, backgroundSize: '120px 120px',
+              mixBlendMode: 'soft-light', opacity: 0.5, pointerEvents: 'none',
+            }} />
+            <SpiralMark size={54} color="var(--color-accent)" strokeWidth={1} spinning={playing} />
           </div>
 
           {/* Transport — timer inline with elapsed */}
-          <div style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-muted)' }}>
                 {mm}:{ss}
@@ -166,16 +179,22 @@ export default function SoundscapePlayer() {
               <button
                 className="pressable"
                 onClick={() => setShowTimer(v => !v)}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'var(--font-mono)',
+                  color: audio.sleepTimer ? pal.tint : 'var(--color-text-muted)',
+                  textShadow: audio.sleepTimer ? `0 0 9px ${pal.tint}99` : 'none',
+                }}
               >
                 <Clock size={11} />
                 {audio.sleepTimer ? `${audio.sleepTimer}m left` : 'timer'}
               </button>
             </div>
 
-            <div style={{ height: 2, background: 'var(--color-hair)', borderRadius: 2, overflow: 'hidden', marginBottom: 16 }}>
+            <div style={{ height: 2, background: 'var(--color-hair)', borderRadius: 2, overflow: 'hidden', marginBottom: 14 }}>
               <div style={{
-                height: '100%', background: 'var(--color-accent)',
+                height: '100%',
+                background: audio.sleepTimer ? pal.tint : 'var(--color-accent)',
+                boxShadow: audio.sleepTimer ? `0 0 8px ${pal.tint}aa` : 'none',
                 width: audio.sleepTimer ? `${Math.min(100, (audio.elapsed / (audio.sleepTimer * 60)) * 100)}%` : '100%',
                 opacity: audio.sleepTimer ? 1 : 0.25,
                 transition: 'width 1s linear',
@@ -184,22 +203,38 @@ export default function SoundscapePlayer() {
 
             {showTimer && (
               <div className="rise" style={{ display: 'flex', gap: 7, marginBottom: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
-                {TIMER_OPTS.map(m => (
+                {TIMER_OPTS.map(m => {
+                  const on = audio.sleepTimer === m
+                  return (
+                    <button
+                      key={m}
+                      className="pressable"
+                      onClick={() => { audio.startSleepTimer(m); setShowTimer(false) }}
+                      style={{
+                        padding: '6px 12px', borderRadius: 999, fontSize: 11.5, fontFamily: 'var(--font-mono)',
+                        background: on ? pal.tint : 'var(--color-surface)',
+                        color: on ? '#10081F' : 'var(--color-text-muted)',
+                        border: `1px solid ${on ? pal.tint : 'var(--color-hair)'}`,
+                        boxShadow: on ? `0 0 14px ${pal.tint}66` : 'none',
+                      }}
+                    >
+                      {m}m
+                    </button>
+                  )
+                })}
+                {audio.sleepTimer != null && (
                   <button
-                    key={m}
                     className="pressable"
-                    onClick={() => { audio.startSleepTimer(m); setShowTimer(false) }}
+                    onClick={() => { audio.cancelSleepTimer(); setShowTimer(false) }}
                     style={{
-                      padding: '6px 12px', borderRadius: 999, fontSize: 11.5,
-                      fontFamily: 'var(--font-mono)',
-                      background: audio.sleepTimer === m ? 'var(--color-accent)' : 'var(--color-surface)',
-                      color: audio.sleepTimer === m ? 'var(--color-accent-ink)' : 'var(--color-text-muted)',
+                      padding: '6px 14px', borderRadius: 999, fontSize: 11.5, fontFamily: 'var(--font-mono)',
+                      background: 'transparent', color: 'var(--color-text-muted)',
                       border: '1px solid var(--color-hair)',
                     }}
                   >
-                    {m}m
+                    Off
                   </button>
-                ))}
+                )}
               </div>
             )}
 
@@ -232,22 +267,34 @@ export default function SoundscapePlayer() {
               holds the whole mix and scrolls INTERNALLY, so the page itself never
               scrolls regardless of how many layers a soundscape has. */}
           <section style={{
-            flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
+            display: 'flex', flexDirection: 'column',
             borderRadius: 22, padding: '14px 16px 6px',
-            background: 'rgba(20,12,40,0.5)',
             border: '1px solid rgba(234,226,255,0.09)',
-            backdropFilter: 'blur(18px) saturate(115%)',
-            WebkitBackdropFilter: 'blur(18px) saturate(115%)',
+            backdropFilter: 'blur(20px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(120%)',
             boxShadow: '0 -10px 40px -28px rgba(0,0,0,0.8)',
+            ...(mixerExpanded
+              ? { position: 'absolute', left: 16, right: 16, top: 48, bottom: 16, zIndex: 30, background: 'rgba(14,8,30,0.92)' }
+              : { flex: 1, minHeight: 0, background: 'rgba(20,12,40,0.5)' }),
           }}>
-            {/* Card header — title + save-as-default (favorite) */}
+            {/* Card header — MIXER taps to expand into a sheet + save-as-default */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.24em',
-                textTransform: 'uppercase', color: 'var(--color-text-muted)',
-              }}>
-                Mixer
-              </span>
+              <button
+                className="pressable focusable"
+                onClick={() => setMixerExpanded(v => !v)}
+                aria-label={mixerExpanded ? 'Collapse mixer' : 'Expand mixer'}
+                style={{ display: 'flex', alignItems: 'center', gap: 7 }}
+              >
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600, letterSpacing: '0.22em',
+                  textTransform: 'uppercase', color: 'var(--color-text)',
+                }}>
+                  Mixer
+                </span>
+                {mixerExpanded
+                  ? <ChevronDown size={14} color="var(--color-text-muted)" strokeWidth={2} />
+                  : <ChevronUp size={14} color="var(--color-text-muted)" strokeWidth={2} />}
+              </button>
               <button
                 className="pressable focusable"
                 onClick={toggleFav}

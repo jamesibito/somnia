@@ -255,7 +255,7 @@ export default function Profile() {
             </a>
           </div>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)', marginTop: 6, letterSpacing: '0.14em' }}>
-            SOMNIA · v1.0 · CONCEPT
+            SOMNIA · v1.1
           </p>
         </div>
       </Screen>

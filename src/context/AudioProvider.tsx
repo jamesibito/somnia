@@ -29,6 +29,7 @@ interface AudioState {
   setSoftenHighs: (v: number) => void
   setCutRumble: (v: number) => void
   startSleepTimer: (minutes: number) => void
+  cancelSleepTimer: () => void
   sleepTimer: number | null
 }
 
@@ -143,12 +144,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }, minutes * 60 * 1000)
   }, [])
 
+  const cancelSleepTimer = useCallback(() => {
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
+    setSleepTimer(null)
+  }, [])
+
   return (
     <Ctx.Provider value={{
       playing, current, levels, elapsed,
       master, softenHighs, cutRumble,
       play, toggle, stop, setLevel, setMaster, setSoftenHighs, setCutRumble,
-      startSleepTimer, sleepTimer,
+      startSleepTimer, cancelSleepTimer, sleepTimer,
     }}>
       {children}
     </Ctx.Provider>
