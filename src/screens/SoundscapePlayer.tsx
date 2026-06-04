@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Pause, Play, SkipBack, SkipForward, Clock, X } from 'lucide-react'
+import { Pause, Play, SkipBack, SkipForward, Clock, X, Heart } from 'lucide-react'
 import AtmosphereLayer from '../components/AtmosphereLayer'
 import GenerativeField from '../components/GenerativeField'
 import Fader from '../components/Fader'
@@ -11,6 +11,21 @@ import { getSoundscape, getPalette, SOUNDSCAPES } from '../data/soundscapes'
 
 const TIMER_OPTS = [15, 30, 45, 60, 90]
 
+// ─── Saved mixes (your default preset per soundscape) ───────────────────────
+const PRESET_KEY = 'somnia.presets.v1'
+interface Preset { levels: Record<string, number>; master: number; soften: number; rumble: number }
+function loadPresets(): Record<string, Preset> {
+  try { return JSON.parse(localStorage.getItem(PRESET_KEY) || '{}') } catch { return {} }
+}
+function savePreset(id: string, p: Preset) {
+  const all = loadPresets(); all[id] = p
+  try { localStorage.setItem(PRESET_KEY, JSON.stringify(all)) } catch { /* quota */ }
+}
+function clearPreset(id: string) {
+  const all = loadPresets(); delete all[id]
+  try { localStorage.setItem(PRESET_KEY, JSON.stringify(all)) } catch { /* quota */ }
+}
+
 export default function SoundscapePlayer() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -18,14 +33,37 @@ export default function SoundscapePlayer() {
   const s = getSoundscape(id || '')
   const pal = getPalette(s?.id)
   const [showTimer, setShowTimer] = useState(false)
+  const [faved, setFaved] = useState(false)
 
-  // Auto-start this soundscape if it isn't the current one.
+  // Auto-start this soundscape, then apply the saved mix (your default preset)
+  // if one exists for it — otherwise the soundscape's defaults stand.
   useEffect(() => {
-    if (s && audio.current?.id !== s.id) {
-      audio.play(s)
+    if (!s) return
+    const preset = loadPresets()[s.id]
+    setFaved(!!preset)
+    const apply = () => {
+      if (!preset) return
+      Object.entries(preset.levels).forEach(([lid, v]) => audio.setLevel(lid, v))
+      audio.setMaster(preset.master)
+      audio.setSoftenHighs(preset.soften)
+      audio.setCutRumble(preset.rumble)
     }
+    if (audio.current?.id !== s.id) audio.play(s).then(apply)
+    else apply()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s?.id])
+
+  const toggleFav = () => {
+    if (!s) return
+    if (faved) { clearPreset(s.id); setFaved(false) }
+    else {
+      savePreset(s.id, {
+        levels: { ...audio.levels },
+        master: audio.master, soften: audio.softenHighs, rumble: audio.cutRumble,
+      })
+      setFaved(true)
+    }
+  }
 
   if (!s) {
     return (
@@ -67,8 +105,8 @@ export default function SoundscapePlayer() {
 
       <div className="screen-body">
         <div className="screen-enter" style={{
-          position: 'relative', padding: '60px 28px 36px',
-          minHeight: '100%', display: 'flex', flexDirection: 'column',
+          position: 'relative', padding: '56px 24px 22px',
+          height: '100%', display: 'flex', flexDirection: 'column',
         }}>
           <TopBar
             onBack
@@ -190,32 +228,69 @@ export default function SoundscapePlayer() {
             </div>
           </div>
 
-          {/* Mix controls (master + tone) above per-layer faders.
-              4-layer soundscapes (Slow Tide, Fairy Forest) set the visual benchmark
-              for total stack height. 2-layer soundscapes inherit more bottom slack,
-              which reads as appropriately quiet for those moods. */}
+          {/* Mixer — a frosted glass card (like the experience site). The card
+              holds the whole mix and scrolls INTERNALLY, so the page itself never
+              scrolls regardless of how many layers a soundscape has. */}
           <section style={{
-            flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
-            gap: 13, borderTop: '1px solid var(--color-hair)', paddingTop: 18,
+            flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
+            borderRadius: 22, padding: '14px 16px 6px',
+            background: 'rgba(20,12,40,0.5)',
+            border: '1px solid rgba(234,226,255,0.09)',
+            backdropFilter: 'blur(18px) saturate(115%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(115%)',
+            boxShadow: '0 -10px 40px -28px rgba(0,0,0,0.8)',
           }}>
-            {/* Per-layer faders — tinted to the soundscape */}
-            {s.layers.map(layer => (
-              <Fader
-                key={layer.id}
-                label={layer.label}
-                tint={pal.tint}
-                value={audio.levels[layer.id] ?? 0}
-                onChange={v => audio.setLevel(layer.id, v)}
-              />
-            ))}
+            {/* Card header — title + save-as-default (favorite) */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.24em',
+                textTransform: 'uppercase', color: 'var(--color-text-muted)',
+              }}>
+                Mixer
+              </span>
+              <button
+                className="pressable focusable"
+                onClick={toggleFav}
+                aria-label={faved ? 'Remove saved mix' : 'Save this mix as your default'}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '5px 11px', borderRadius: 999,
+                  fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  background: faved ? 'rgba(181,168,232,0.16)' : 'transparent',
+                  border: `1px solid ${faved ? 'var(--color-accent)' : 'var(--color-hair)'}`,
+                  color: faved ? 'var(--color-accent-bright)' : 'var(--color-text-muted)',
+                }}
+              >
+                <Heart size={12} fill={faved ? 'currentColor' : 'none'} strokeWidth={1.8} />
+                {faved ? 'Saved' : 'Save mix'}
+              </button>
+            </div>
 
-            {/* Visual seam between layers and the global tone controls */}
-            <div style={{ height: 1, background: 'var(--color-hair)', margin: '3px 0' }} />
+            {/* Scrollable fader stack */}
+            <div style={{
+              flex: 1, minHeight: 0, overflowY: 'auto',
+              display: 'flex', flexDirection: 'column', gap: 13, paddingBottom: 6,
+            }}>
+              {/* Per-layer faders — tinted to the soundscape */}
+              {s.layers.map(layer => (
+                <Fader
+                  key={layer.id}
+                  label={layer.label}
+                  tint={pal.tint}
+                  value={audio.levels[layer.id] ?? 0}
+                  onChange={v => audio.setLevel(layer.id, v)}
+                />
+              ))}
 
-            {/* Global tone — master + the two filters, neutral lavender */}
-            <Fader label="Volume" tint="var(--color-accent-bright)" value={audio.master} onChange={audio.setMaster} />
-            <Fader label="Soften" tint="var(--color-accent)" value={audio.softenHighs} onChange={audio.setSoftenHighs} />
-            <Fader label="De-rumble" tint="var(--color-accent)" value={audio.cutRumble} onChange={audio.setCutRumble} />
+              {/* Seam between layers and the global tone controls */}
+              <div style={{ height: 1, background: 'var(--color-hair)', margin: '3px 0' }} />
+
+              {/* Global tone — master + the two filters, neutral lavender */}
+              <Fader label="Volume" tint="var(--color-accent-bright)" value={audio.master} onChange={audio.setMaster} />
+              <Fader label="Soften" tint="var(--color-accent)" value={audio.softenHighs} onChange={audio.setSoftenHighs} />
+              <Fader label="De-rumble" tint="var(--color-accent)" value={audio.cutRumble} onChange={audio.setCutRumble} />
+            </div>
           </section>
         </div>
       </div>
