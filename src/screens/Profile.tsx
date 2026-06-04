@@ -242,8 +242,8 @@ export default function Profile() {
             A brand &amp; app concept by James Ibitoye.
           </p>
           <p style={{ fontSize: 12, color: 'var(--color-text-faint)', textAlign: 'center', lineHeight: 1.6, maxWidth: 280 }}>
-            Started as a 2D-Visualization brand project, evolved into a sleep,
-            meditation, white-noise &amp; soundscape product concept.
+            Started as a Branding &amp; Marketing course brand project, evolved
+            into a sleep, meditation, white-noise &amp; soundscape product concept.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 4 }}>
             <a
@@ -255,7 +255,7 @@ export default function Profile() {
             </a>
           </div>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-faint)', marginTop: 6, letterSpacing: '0.14em' }}>
-            SOMNIA · v0.4 · CONCEPT
+            SOMNIA · v1.0 · CONCEPT
           </p>
         </div>
       </Screen>
