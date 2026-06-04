@@ -52,7 +52,7 @@ function audioCtx(): AudioContext {
 
   // ── Master chain: warmth → gentle glue compressor → out ──
   master = ctx.createGain()
-  master.gain.value = 0.82
+  master.gain.value = 0.5 // gentle default so nothing is ever too loud
 
   const warmth = ctx.createBiquadFilter()
   warmth.type = 'highshelf'
@@ -532,8 +532,10 @@ async function loadFirst(c: AudioContext, urls: string[]): Promise<AudioBuffer |
 
 interface SampleOpts {
   gain?: number
-  /** submerged / muffled character — biquad lowpass cutoff in Hz */
+  /** submerged / muffled character — biquad lowpass cutoff in Hz (cuts highs) */
   lowpass?: number
+  /** trims sub-bass rumble — biquad highpass cutoff in Hz */
+  highpass?: number
   rate?: number
   pan?: number
 }
@@ -559,6 +561,13 @@ function sampleLayer(name: string, opts: SampleOpts, fallback: Builder): Builder
       s.loop = true
       s.playbackRate.value = opts.rate ?? 1
       let node: AudioNode = s
+      if (opts.highpass) {
+        const hp = c.createBiquadFilter()
+        hp.type = 'highpass'
+        hp.frequency.value = opts.highpass
+        node.connect(hp)
+        node = hp
+      }
       if (opts.lowpass) {
         const lp = c.createBiquadFilter()
         lp.type = 'lowpass'
@@ -584,23 +593,34 @@ function sampleLayer(name: string, opts: SampleOpts, fallback: Builder): Builder
 
 const BUILDERS: Record<LayerId, Builder> = {
   rain:     sampleLayer('rain',     { gain: 0.95 }, buildRain),
-  thunder:  sampleLayer('thunder',  { gain: 0.85 }, buildThunder),
-  wind:     sampleLayer('wind',     { gain: 0.85 }, buildWind),
-  tide:     sampleLayer('tide',     { gain: 0.95 }, buildTide),
-  fire:     sampleLayer('fire',     { gain: 0.95 }, buildFire),
-  crickets: sampleLayer('crickets', { gain: 0.85 }, buildCrickets),
-  harp:     sampleLayer('harp',     { gain: 0.7 },  buildHarp),
+  // Rumbly layers get a gentle highpass so their sub-bass doesn't dominate.
+  thunder:  sampleLayer('thunder',  { gain: 0.85, highpass: 42 }, buildThunder),
+  // Wind: soften its hiss (lowpass) so it sits as a faint breeze, not a roar.
+  wind:     sampleLayer('wind',     { gain: 0.85, lowpass: 2200 }, buildWind),
+  tide:     sampleLayer('tide',     { gain: 0.95, highpass: 45 }, buildTide),
+  fire:     sampleLayer('fire',     { gain: 0.95, highpass: 70 }, buildFire),
+  // Bright / high-pitched layers get the highs rolled off so they're not shrill.
+  crickets: sampleLayer('crickets', { gain: 0.85, lowpass: 6000 }, buildCrickets),
+  harp:     sampleLayer('harp',     { gain: 0.7,  lowpass: 5000 }, buildHarp),
   bubbles:  sampleLayer('bubbles',  { gain: 0.75, lowpass: 1400 }, buildBubbles),
   water:    sampleLayer('water',    { gain: 0.9,  lowpass: 820 },  buildWater),
-  fairy:    sampleLayer('fairy',    { gain: 0.72 },                buildFairy),
-  seagulls: sampleLayer('seagulls', { gain: 0.55 },                buildSeagulls),
-  drone:    sampleLayer('drone',    { gain: 0.55 },                buildDrone),
+  fairy:    sampleLayer('fairy',    { gain: 0.72, lowpass: 4000 }, buildFairy),
+  seagulls: sampleLayer('seagulls', { gain: 0.55, lowpass: 4500 }, buildSeagulls),
+  drone:    sampleLayer('drone',    { gain: 0.55, highpass: 55 },  buildDrone),
 }
 
 // Per-layer reverb send amounts — how much "space" each lives in.
 const SEND: Record<LayerId, number> = {
   rain: 0.16, thunder: 0.5, wind: 0.22, tide: 0.34, fire: 0.12, drone: 0.4,
   crickets: 0.2, harp: 0.52, bubbles: 0.3, water: 0.3, fairy: 0.6, seagulls: 0.55,
+}
+
+// Per-layer loudness CEILING — what a fader at 100% actually means for that
+// layer, so nothing is ever too loud. Wind is always a faint background breeze;
+// shrill/high-pitched layers cap well below full so their "100%" sits ~half.
+const MAX_GAIN: Record<LayerId, number> = {
+  rain: 0.95, thunder: 0.6, wind: 0.34, tide: 0.95, fire: 0.9, drone: 0.85,
+  crickets: 0.55, harp: 0.5, bubbles: 0.8, water: 0.9, fairy: 0.5, seagulls: 0.45,
 }
 
 // ─── Public API (unchanged) ────────────────────────────────────────────────
@@ -667,12 +687,23 @@ export function setLayer(id: LayerId, volume: number) {
     layers.set(id, layer)
   }
   const v = Math.max(0, Math.min(1, volume))
-  // CRITICAL: scale the reverb send WITH the dry gain. Each layer's source
-  // is tapped into BOTH paths inside the builder; if we only mute the dry
-  // path, the source keeps pumping into the reverb bus and you hear a
-  // reverb-only "ghost" of the layer with the slider at zero.
-  layer.gain.gain.setTargetAtTime(v * 0.9, c.currentTime, 0.08)
-  layer.send.gain.setTargetAtTime(v * SEND[id], c.currentTime, 0.08)
+  const now = c.currentTime
+  // True zero: a setTargetAtTime ramp only approaches 0 asymptotically, which
+  // leaves an audible tail (the "0% but I still hear it" bug). Below a hair,
+  // cancel the ramp and pin BOTH paths to a hard 0 so the layer is silent.
+  if (v <= 0.0008) {
+    layer.gain.gain.cancelScheduledValues(now)
+    layer.gain.gain.setValueAtTime(0, now)
+    layer.send.gain.cancelScheduledValues(now)
+    layer.send.gain.setValueAtTime(0, now)
+    return
+  }
+  // The fader 0..1 maps to the layer's loudness CEILING (MAX_GAIN), so 100%
+  // is "as loud as this layer should ever be", not raw full scale. CRITICAL:
+  // scale the reverb send WITH the dry gain — the source feeds both paths, so
+  // muting only the dry one leaves a reverb-only ghost.
+  layer.gain.gain.setTargetAtTime(v * MAX_GAIN[id], now, 0.08)
+  layer.send.gain.setTargetAtTime(v * SEND[id] * MAX_GAIN[id], now, 0.08)
 }
 
 export function stopAll() {

@@ -9,7 +9,7 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
     layers: [
       { id: 'rain', label: 'Rain', default: 0.72 },
       { id: 'thunder', label: 'Thunder', default: 0.3 },
-      { id: 'wind', label: 'Wind', default: 0.18 },
+      { id: 'wind', label: 'Wind', default: 0.12 },
     ],
   },
   {
@@ -17,7 +17,7 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
     name: 'Cedar Forest',
     tagline: 'Wind through tall pines',
     layers: [
-      { id: 'wind', label: 'Wind', default: 0.6 },
+      { id: 'wind', label: 'Wind', default: 0.42 },
       { id: 'rain', label: 'Light drizzle', default: 0.22 },
       { id: 'drone', label: 'Forest hum', default: 0.35 },
     ],
@@ -29,7 +29,7 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
     layers: [
       { id: 'tide', label: 'Waves', default: 0.7 },
       { id: 'seagulls', label: 'Gulls', default: 0.18 },
-      { id: 'wind', label: 'Sea breeze', default: 0.28 },
+      { id: 'wind', label: 'Sea breeze', default: 0.16 },
       { id: 'drone', label: 'Deep', default: 0.22 },
     ],
   },
@@ -39,7 +39,7 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
     tagline: 'A low fire, almost out',
     layers: [
       { id: 'fire', label: 'Fire', default: 0.66 },
-      { id: 'wind', label: 'Draft', default: 0.2 },
+      { id: 'wind', label: 'Draft', default: 0.12 },
       { id: 'drone', label: 'Warmth', default: 0.22 },
     ],
   },
@@ -69,7 +69,7 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
       { id: 'crickets', label: 'Crickets', default: 0.5 },
       { id: 'harp', label: 'Harp', default: 0.42 },
       { id: 'fairy', label: 'Shimmer', default: 0.32 },
-      { id: 'wind', label: 'Leaves', default: 0.22 },
+      { id: 'wind', label: 'Leaves', default: 0.14 },
     ],
   },
   {

@@ -45,7 +45,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [levels, setLevels] = useState<Record<string, number>>({})
   const [elapsed, setElapsed] = useState(0)
   const [sleepTimer, setSleepTimer] = useState<number | null>(null)
-  const [master, setMasterState] = useState(0.82)        // matches engine default
+  const [master, setMasterState] = useState(0.5)         // matches engine default — gentle
   const [softenHighs, setSoftenHighsState] = useState(0) // flat
   const [cutRumble, setCutRumbleState] = useState(0)     // flat
   const tick = useRef<number | null>(null)
