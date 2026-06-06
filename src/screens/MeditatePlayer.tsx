@@ -176,6 +176,16 @@ export default function MeditatePlayer() {
       <AtmosphereLayer variant="calm" grain={0.05} reactive />
       <GenerativeField concept="constellation" tint="rgba(181,168,232,0.6)" density={40} />
 
+      {/* Calming ambient glow — a soft column of light behind the orb that
+          breathes with the cycle (--breath, written by the orb's rAF). */}
+      <div aria-hidden style={{
+        position: 'absolute', top: '34%', left: '50%', transform: 'translate(-50%, -50%)',
+        width: 460, height: 460, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(155,118,255,0.18), transparent 68%)',
+        opacity: 'calc(0.5 + var(--breath, 0) * 0.4)' as unknown as number,
+        filter: 'blur(56px)', pointerEvents: 'none',
+      }} />
+
       {hasAudio && (
         <audio
           ref={audioRef}
@@ -228,7 +238,7 @@ export default function MeditatePlayer() {
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            gap: 22, minHeight: 280,
+            gap: 52, minHeight: 280,
           }}>
             {/* Orb stack */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -315,13 +325,28 @@ export default function MeditatePlayer() {
                 }} />
               ))}
             </div>
-            {/* Thin overall progress */}
-            <div style={{ height: 1, background: 'var(--color-hair)', borderRadius: 1, overflow: 'hidden', marginBottom: 20 }}>
-              <div style={{
-                height: '100%', background: 'rgba(181,168,232,0.35)',
-                width: `${progress * 100}%`, transition: 'width 1s linear',
-              }} />
-            </div>
+            {/* Overall progress — tap anywhere on the track to scrub */}
+            <button
+              className="focusable"
+              aria-label="Seek"
+              onClick={e => {
+                const r = e.currentTarget.getBoundingClientRect()
+                const frac = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width))
+                seek(frac * total - t)
+              }}
+              style={{
+                display: 'block', width: '100%', padding: '8px 0', marginBottom: 14,
+                background: 'transparent', border: 'none', cursor: 'pointer',
+              }}
+            >
+              <div style={{ height: 3, background: 'var(--color-hair)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', background: 'var(--color-accent)',
+                  boxShadow: '0 0 8px rgba(181,168,232,0.6)',
+                  width: `${progress * 100}%`, transition: 'width 0.4s linear',
+                }} />
+              </div>
+            </button>
 
             {/* Transport — rewind 15s · play/pause · forward 15s */}
             {!done && (

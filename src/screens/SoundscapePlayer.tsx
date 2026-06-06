@@ -11,10 +11,6 @@ import { getSoundscape, getPalette, SOUNDSCAPES } from '../data/soundscapes'
 
 const TIMER_OPTS = [15, 30, 45, 60, 90]
 
-// Faint fractal-noise grain — laid over the hero orb's glow so the pulses read
-// as organic light rather than a clean CSS gradient.
-const GRAIN = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
-
 // ─── Saved mixes (your default preset per soundscape) ───────────────────────
 const PRESET_KEY = 'somnia.presets.v1'
 interface Preset { levels: Record<string, number>; master: number; soften: number; rumble: number }
@@ -38,7 +34,7 @@ export default function SoundscapePlayer() {
   const pal = getPalette(s?.id)
   const [showTimer, setShowTimer] = useState(false)
   const [faved, setFaved] = useState(false)
-  const [mixerExpanded, setMixerExpanded] = useState(false)
+  const [mixerMinimized, setMixerMinimized] = useState(false)
 
   // Auto-start this soundscape, then apply the saved mix (your default preset)
   // if one exists for it — otherwise the soundscape's defaults stand.
@@ -126,8 +122,8 @@ export default function SoundscapePlayer() {
             }
           />
 
-          {/* Title — shifted up + tighter so the orb + mixer get room to breathe */}
-          <div style={{ textAlign: 'center', marginBottom: 14 }}>
+          {/* Title + tagline — pinned to the top */}
+          <div style={{ textAlign: 'center', flexShrink: 0 }}>
             <h1 style={{
               fontFamily: 'var(--font-serif)', fontWeight: 400,
               fontSize: 27, color: 'var(--color-text)', letterSpacing: '-0.02em',
@@ -139,39 +135,38 @@ export default function SoundscapePlayer() {
             </p>
           </div>
 
-          {/* Hero orb — pulses tinted to the soundscape, with a faint grain so
-              they blend like real light rather than a clean gradient. */}
+          {/* Hero group — orb + transport. Flexes to fill the space between the
+              pinned title and the pinned mixer, so breathing room scales up as
+              the mixer shrinks (or is minimised). */}
           <div style={{
-            position: 'relative', width: 168, height: 168,
-            margin: '0 auto 18px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
+            flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 'clamp(18px, 4vh, 42px)',
           }}>
-            <div aria-hidden style={{
-              position: 'absolute', inset: 0, borderRadius: '50%',
-              border: `1px solid ${pal.tint}`,
-              animation: playing ? 'breathe-ring 5s ease-in-out infinite' : 'none', opacity: 0.28,
-            }} />
-            <div aria-hidden style={{
-              position: 'absolute', inset: 20, borderRadius: '50%',
-              border: `1px solid ${pal.tint}`,
-              animation: playing ? 'breathe-ring 5s ease-in-out -1.8s infinite' : 'none', opacity: 0.38,
-            }} />
-            <div aria-hidden style={{
-              position: 'absolute', inset: 38, borderRadius: '50%',
-              background: `radial-gradient(circle, ${pal.tint}cc, rgba(155,118,255,0.32) 45%, transparent 72%)`,
-              filter: 'blur(14px)',
-            }} />
-            {/* Grain overlay on the glow — soft-light, very subtle */}
-            <div aria-hidden style={{
-              position: 'absolute', inset: 28, borderRadius: '50%', overflow: 'hidden',
-              backgroundImage: GRAIN, backgroundSize: '120px 120px',
-              mixBlendMode: 'soft-light', opacity: 0.5, pointerEvents: 'none',
-            }} />
-            <SpiralMark size={54} color="var(--color-accent)" strokeWidth={1} spinning={playing} />
-          </div>
+            {/* Hero orb — pulses tinted to the soundscape */}
+            <div style={{
+              position: 'relative', width: 168, height: 168, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div aria-hidden style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                border: `1px solid ${pal.tint}`,
+                animation: playing ? 'breathe-ring 5s ease-in-out infinite' : 'none', opacity: 0.28,
+              }} />
+              <div aria-hidden style={{
+                position: 'absolute', inset: 20, borderRadius: '50%',
+                border: `1px solid ${pal.tint}`,
+                animation: playing ? 'breathe-ring 5s ease-in-out -1.8s infinite' : 'none', opacity: 0.38,
+              }} />
+              <div aria-hidden style={{
+                position: 'absolute', inset: 38, borderRadius: '50%',
+                background: `radial-gradient(circle, ${pal.tint}cc, rgba(155,118,255,0.32) 45%, transparent 72%)`,
+                filter: 'blur(14px)',
+              }} />
+              <SpiralMark size={54} color="var(--color-accent)" strokeWidth={1} spinning={playing} />
+            </div>
 
-          {/* Transport — timer inline with elapsed */}
-          <div style={{ marginBottom: 14 }}>
+            {/* Transport — timer + progress + play/skip */}
+            <div style={{ width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-muted)' }}>
                 {mm}:{ss}
@@ -261,28 +256,27 @@ export default function SoundscapePlayer() {
                 <SkipForward size={22} color="var(--color-text-muted)" strokeWidth={1.5} />
               </button>
             </div>
+            </div>
           </div>
 
-          {/* Mixer — a frosted glass card (like the experience site). The card
-              holds the whole mix and scrolls INTERNALLY, so the page itself never
-              scrolls regardless of how many layers a soundscape has. */}
+          {/* Mixer — frosted glass card pinned to the bottom. Its fader stack
+              caps + scrolls, so the hero group above keeps the rest of the room;
+              the chevron minimises it to just the header for max hero space. */}
           <section style={{
-            display: 'flex', flexDirection: 'column',
-            borderRadius: 22, padding: '14px 16px 6px',
+            flexShrink: 0, display: 'flex', flexDirection: 'column',
+            borderRadius: 22, padding: '12px 16px 6px',
             border: '1px solid rgba(234,226,255,0.09)',
+            background: 'rgba(20,12,40,0.5)',
             backdropFilter: 'blur(20px) saturate(120%)',
             WebkitBackdropFilter: 'blur(20px) saturate(120%)',
             boxShadow: '0 -10px 40px -28px rgba(0,0,0,0.8)',
-            ...(mixerExpanded
-              ? { position: 'absolute', left: 16, right: 16, top: 48, bottom: 16, zIndex: 30, background: 'rgba(14,8,30,0.92)' }
-              : { flex: 1, minHeight: 0, background: 'rgba(20,12,40,0.5)' }),
           }}>
-            {/* Card header — MIXER taps to expand into a sheet + save-as-default */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            {/* Card header — MIXER taps to minimise/restore + save-as-default */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: mixerMinimized ? 0 : 12 }}>
               <button
                 className="pressable focusable"
-                onClick={() => setMixerExpanded(v => !v)}
-                aria-label={mixerExpanded ? 'Collapse mixer' : 'Expand mixer'}
+                onClick={() => setMixerMinimized(v => !v)}
+                aria-label={mixerMinimized ? 'Expand mixer' : 'Minimise mixer'}
                 style={{ display: 'flex', alignItems: 'center', gap: 7 }}
               >
                 <span style={{
@@ -291,9 +285,9 @@ export default function SoundscapePlayer() {
                 }}>
                   Mixer
                 </span>
-                {mixerExpanded
-                  ? <ChevronDown size={14} color="var(--color-text-muted)" strokeWidth={2} />
-                  : <ChevronUp size={14} color="var(--color-text-muted)" strokeWidth={2} />}
+                {mixerMinimized
+                  ? <ChevronUp size={14} color="var(--color-text-muted)" strokeWidth={2} />
+                  : <ChevronDown size={14} color="var(--color-text-muted)" strokeWidth={2} />}
               </button>
               <button
                 className="pressable focusable"
@@ -314,9 +308,10 @@ export default function SoundscapePlayer() {
               </button>
             </div>
 
-            {/* Scrollable fader stack */}
+            {/* Scrollable fader stack — capped so the hero keeps the room */}
+            {!mixerMinimized && (
             <div style={{
-              flex: 1, minHeight: 0, overflowY: 'auto',
+              maxHeight: 264, overflowY: 'auto',
               display: 'flex', flexDirection: 'column', gap: 13, paddingBottom: 6,
             }}>
               {/* Per-layer faders — tinted to the soundscape */}
@@ -338,6 +333,7 @@ export default function SoundscapePlayer() {
               <Fader label="Soften" tint="var(--color-accent)" value={audio.softenHighs} onChange={audio.setSoftenHighs} />
               <Fader label="De-rumble" tint="var(--color-accent)" value={audio.cutRumble} onChange={audio.setCutRumble} />
             </div>
+            )}
           </section>
         </div>
       </div>

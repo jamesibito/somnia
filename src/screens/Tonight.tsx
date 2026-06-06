@@ -130,7 +130,7 @@ export default function Tonight() {
         }}>
           {streak.broken
             ? 'A missed night isn’t a broken streak. Begin again tonight.'
-            : `${streak.count} nights you hit your bedtime. Hold it.`}
+            : `On rhythm — ${streak.count} nights near your bedtime.`}
         </p>
       </Screen>
       <TabBar />

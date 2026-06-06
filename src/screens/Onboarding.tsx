@@ -110,7 +110,7 @@ export default function Onboarding() {
                 What quiets you?
               </Display>
               <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginBottom: 28 }}>
-                We'll build your first soundscape from this.
+                We'll choose your first soundscape from this.
               </p>
               <ChipList options={SOUND_PREFS} selected={sounds} onToggle={v => toggle(sounds, setSounds, v)} />
             </div>
