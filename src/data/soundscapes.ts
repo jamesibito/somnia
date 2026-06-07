@@ -82,6 +82,16 @@ export const SOUNDSCAPES: SoundscapeDef[] = [
       { id: 'drone', label: 'Pressure', default: 0.34 },
     ],
   },
+  {
+    id: 'waterfall',
+    name: 'Waterfall',
+    tagline: 'A steady cascade, close and constant',
+    layers: [
+      { id: 'water', label: 'Cascade', default: 0.7 },
+      { id: 'rain', label: 'Spray', default: 0.3 },
+      { id: 'drone', label: 'Deep', default: 0.2 },
+    ],
+  },
 ]
 
 export function getSoundscape(id: string) {
@@ -109,6 +119,7 @@ export const SOUNDSCAPE_PALETTES: Record<string, SoundscapePalette> = {
   'deep-drift':      { b1: 'rgba(4,2,18,0.97)',      b2: 'rgba(8,4,36,0.94)',     b3: 'rgba(30,14,80,0.28)',   tint: '#FFE066', concept: 'cosmic' },
   'fairy-forest':    { b1: 'rgba(168,48,210,0.72)',  b2: 'rgba(120,28,178,0.68)', b3: 'rgba(210,110,240,0.38)', tint: '#E890FF', concept: 'fairies' },
   'underwater':      { b1: 'rgba(14,118,158,0.82)',  b2: 'rgba(8,84,130,0.78)',   b3: 'rgba(50,178,210,0.42)', tint: '#30C0DE', concept: 'bubbles' },
+  'waterfall':       { b1: 'rgba(18,120,150,0.82)',  b2: 'rgba(10,86,120,0.78)',  b3: 'rgba(60,180,210,0.45)', tint: '#4ACCE8', concept: 'waterfall' },
 }
 
 export function getPalette(id: string | undefined): SoundscapePalette {

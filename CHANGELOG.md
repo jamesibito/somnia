@@ -4,6 +4,46 @@ Versioned from **v1.0** (the first real, built release). Earlier work was tracke
 as passes A–G in `PUNCHLIST.md`; the Figma-only concept from ~2021 is prehistory.
 Keep this updated each release.
 
+## v1.3 — 2026-06-07
+### Soundscape visuals
+- **Slow Tide reworked.** The old "waves" field was thin sine-curve wire-lines —
+  it read as a diagram, not water. New `waves` draws **layered, depth-shaded
+  swells**: each band is a filled sine crest with a soft gradient body fading
+  downward and a brighter crest highlight, far swells dimmer/slower/higher and
+  near swells brighter/faster/lower. Foam still rides the surface.
+- The original is **banked as `waves-legacy`** — not deleted, still selectable in
+  the dev concept switcher, so the look can be reverted instantly.
+- **New "Waterfall" soundscape** (9th): teal palette (#4ACCE8), layers
+  Cascade / Spray / Deep, and a new canvas `waterfall` concept — a dense sheet of
+  near-vertical falling water columns plus rising mist at the base.
+- Faster rain everywhere (vy 12–21 → 30–52, longer streaks) so it reads as real
+  rainfall, not a slow drift.
+
+### Design decisions & rationale
+- **Filled swells over wire-lines:** volume reads as water; a single bright line
+  reads as an oscilloscope. The vertical gradient gives each swell a body, and the
+  depth mapping (amplitude/brightness by screen-Y) fakes parallax cheaply — no
+  extra particles, just a per-band scalar.
+- **Bank, don't delete:** the owner explicitly wanted the old look kept in case the
+  new one isn't liked. Keeping it as a real concept (vs. a git-only snapshot) makes
+  it switchable live, zero-cost to compare.
+- **Waterfall reuses existing audio layers** (water + rain-as-spray + drone) rather
+  than sourcing new samples — ships today, sounds like rushing water, and the
+  hybrid engine still prefers recorded samples if we add them later.
+
+### Tradeoffs
+- Filled swells redraw the sine path twice per band (fill + crest stroke). With ~6
+  bands and a coarse step (W/8) it's negligible, but more work than the one-pass
+  line. Accepted for the visual gain.
+- Waterfall "Spray" is the rain layer re-labelled; against a real field recording
+  it's a stand-in. Flagged for a later Pixabay swap alongside tide/water.
+
+### Open questions
+- Is the new Slow Tide too busy behind the player at default density? Left at the
+  same 0.36 budget; easy to dial if it competes with the orb.
+- Waterfall mist is very faint at default density — intentional (background), but
+  worth a look on a real phone.
+
 ## v1.2 — 2026-06-03
 ### Player
 - Re-laid-out: soundscape title pinned top, mixer pinned bottom, and the hero
