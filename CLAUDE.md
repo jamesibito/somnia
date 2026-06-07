@@ -70,7 +70,7 @@ src/
 │  └─ engine.ts          — hybrid Web Audio engine (sampleLayer pattern)
 ├─ components/
 │  ├─ AtmosphereLayer.tsx       — 3 blurred drifting blobs + grain + amp reactivity
-│  ├─ GenerativeField.tsx       — canvas particle field (11 concepts)
+│  ├─ GenerativeField.tsx       — canvas particle field (13 concepts, incl. waves-legacy + waterfall)
 │  ├─ FieldConceptSwitcher.tsx  — dev-only concept audition (gated by import.meta.env.DEV)
 │  ├─ NowPlayingDot.tsx         — persistent now-playing pill in PhoneFrame
 │  ├─ PhoneFrame.tsx            — the 390×844 device-frame chrome
@@ -88,7 +88,7 @@ src/
 │  └─ SessionProvider.tsx       — logged nights (localStorage: somnia.sessions.v1)
 ├─ data/
 │  ├─ content.ts                — meditations, user info, seeded session backfill
-│  └─ soundscapes.ts            — 8 soundscapes + palettes + concept mapping
+│  └─ soundscapes.ts            — 9 soundscapes + palettes + concept mapping
 ├─ screens/                     — all 15 routed screens
 └─ utils/
    ├─ insight.ts                — deriveInsight, deriveStreak (per-morning analysis)

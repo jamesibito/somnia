@@ -49,8 +49,12 @@ const DENSITY_SCALE: Record<FieldConcept, number> = {
   rain: 1.5,
   // Cosmic: sparse void with rare shooting stars — drift/depth over sparkle density.
   cosmic: 0.7,
-  // Waves: ~4 large wave lines + ~30 foam dots = ~0.36 of base density.
+  // Waves: ~6 swell bands + ~30 foam dots = ~0.36 of base density.
   waves: 0.36,
+  // Waves-legacy: the original thin-line field, same budget.
+  'waves-legacy': 0.36,
+  // Waterfall: a dense vertical sheet of water + rising mist.
+  waterfall: 1.7,
 }
 
 export default function GenerativeField({ tint = '#BEB0FF', density = 96, concept = 'motes' }: Props) {
@@ -160,9 +164,9 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             // fast falling streaks, slight wind shear; r = streak length
             particles.push({
               x: Math.random() * W, y: Math.random() * H,
-              vx: -0.8 - Math.random() * 0.6,
-              vy: 12 + Math.random() * 9,
-              r: 16 + Math.random() * 26,
+              vx: -1.1 - Math.random() * 0.8,
+              vy: 30 + Math.random() * 22,
+              r: 26 + Math.random() * 30,
               a: 0.12 + Math.random() * 0.22, ph,
             }); break
           case 'cosmic': {
@@ -192,9 +196,36 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             break
           }
           case 'waves': {
-            // Hybrid: ~15% are wave-lines (encoded by r > 12), the rest are foam
-            // particles drifting along the surface. Gives the field actual motion.
-            const isLine = i % 7 === 0 // ~14% are wave lines
+            // Layered ocean swells (r > 12 = filled swell band) with depth — far
+            // swells sit higher/dimmer/slower, near swells lower/brighter/faster —
+            // plus drifting foam (r <= 12) riding the surface.
+            const isLine = i % 6 === 0 // ~17% are swell bands
+            if (isLine) {
+              const k = i / COUNT // 0..1 ordering → depth (0 far/top, 1 near/bottom)
+              particles.push({
+                x: Math.random() * Math.PI * 2,        // phase offset
+                y: H * (0.30 + k * 0.62),              // distribute mid → lower
+                vx: 0.003 + k * 0.006,                 // nearer swells advance faster
+                vy: (Math.random() - 0.5) * 0.02,      // very slow vertical drift
+                r: 16 + k * 30 + Math.random() * 10,   // nearer = taller (always > 12)
+                a: 0.10 + Math.random() * 0.10, ph,
+              })
+            } else {
+              // Foam particle — small bright dot drifting with the current
+              particles.push({
+                x: Math.random() * W,
+                y: H * (0.34 + Math.random() * 0.62),  // mid-to-lower surface
+                vx: 0.25 + Math.random() * 0.6,        // rightward current
+                vy: 0,
+                r: 1.0 + Math.random() * 2.0,          // small dots (< 12 = foam)
+                a: 0.35 + Math.random() * 0.4, ph,
+              })
+            }
+            break
+          }
+          case 'waves-legacy': {
+            // BANKED original: ~14% thin sine-line waves (r > 12), rest foam dots.
+            const isLine = i % 7 === 0
             if (isLine) {
               particles.push({
                 x: Math.random() * Math.PI * 2, // phase offset
@@ -205,7 +236,6 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
                 a: 0.12 + Math.random() * 0.16, ph,
               })
             } else {
-              // Foam particle — small bright dot drifting with the current
               particles.push({
                 x: Math.random() * W,
                 y: H * (0.2 + Math.random() * 0.75), // mid-to-lower surface
@@ -213,6 +243,31 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
                 vy: Math.sin(Math.random() * Math.PI * 2) * 0.08, // gentle bob
                 r: 1.0 + Math.random() * 2.2, // small dots (< 12 marks them as foam)
                 a: 0.4 + Math.random() * 0.4, ph,
+              })
+            }
+            break
+          }
+          case 'waterfall': {
+            // Dense vertical cascade: most particles are falling water columns
+            // (vy > 0), ~22% are rising mist blobs near the base (vy < 0).
+            const isMist = Math.random() < 0.22
+            if (isMist) {
+              particles.push({
+                x: Math.random() * W,
+                y: H * (0.68 + Math.random() * 0.34),
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: -0.15 - Math.random() * 0.3,       // rises (vy < 0 marks it as mist)
+                r: 14 + Math.random() * 26,            // soft mist blob
+                a: 0.05 + Math.random() * 0.08, ph,
+              })
+            } else {
+              particles.push({
+                x: Math.random() * W,
+                y: Math.random() * H,
+                vx: -0.2 + Math.random() * 0.4,        // nearly vertical
+                vy: 26 + Math.random() * 20,           // fast fall
+                r: 30 + Math.random() * 34,            // streak length
+                a: 0.10 + Math.random() * 0.16, ph,
               })
             }
             break
@@ -364,7 +419,60 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           ctx.fill()
         }
       } else if (activeConcept === 'waves') {
-        // Wave-lines first (full-width sine curves), then foam dots on top
+        // Layered swells: each band is a filled sine crest with a soft gradient
+        // body fading downward, plus a brighter crest highlight. Depth (band y)
+        // drives amplitude / brightness so the water reads as rolling, not wire.
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.lineCap = 'round'
+        for (const p of particles) {
+          if (p.r <= 12) continue // foam drawn next pass
+          const depth = Math.max(0, Math.min(1, p.y / H))
+          const amp2 = p.r * (0.6 + amp * 0.9)
+          const freq = 0.010 + (1 - depth) * 0.006 // far swells slightly tighter
+          const bandH = 70 + depth * 130
+          const steps = Math.ceil(W / 8)
+          const baseA = p.a * (0.55 + depth * 0.9) * (0.8 + amp * 0.4)
+          // filled body
+          ctx.beginPath()
+          for (let xi = 0; xi <= steps; xi++) {
+            const x = (xi / steps) * W
+            const y = p.y + Math.sin(x * freq + p.x + t * p.vx) * amp2
+            xi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+          }
+          ctx.lineTo(W, p.y + bandH)
+          ctx.lineTo(0, p.y + bandH)
+          ctx.closePath()
+          const grd = ctx.createLinearGradient(0, p.y - amp2, 0, p.y + bandH)
+          grd.addColorStop(0, `rgba(${tr},${tg},${tb},${baseA})`)
+          grd.addColorStop(1, `rgba(${tr},${tg},${tb},0)`)
+          ctx.globalAlpha = 1
+          ctx.fillStyle = grd
+          ctx.fill()
+          // crest highlight
+          ctx.globalAlpha = Math.min(1, baseA * 1.9 + 0.08)
+          ctx.strokeStyle = `rgb(${tr},${tg},${tb})`
+          ctx.lineWidth = (0.7 + depth * 1.0) + amp * 0.6
+          ctx.beginPath()
+          for (let xi = 0; xi <= steps; xi++) {
+            const x = (xi / steps) * W
+            const y = p.y + Math.sin(x * freq + p.x + t * p.vx) * amp2
+            xi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+          }
+          ctx.stroke()
+        }
+        // Foam dots — bright small particles riding the surface, additive
+        ctx.globalCompositeOperation = 'lighter'
+        for (const p of particles) {
+          if (p.r > 12) continue
+          ctx.globalAlpha = p.a * (0.6 + amp * 0.4)
+          ctx.fillStyle = `rgb(${tr},${tg},${tb})`
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, p.r * (0.9 + amp * 0.4), 0, Math.PI * 2)
+          ctx.fill()
+          if (p.r > 1.6) blob(p.x, p.y, p.r * 5, p.a * 0.16)
+        }
+      } else if (activeConcept === 'waves-legacy') {
+        // BANKED original: thin sine-line waves + additive foam dots.
         ctx.globalCompositeOperation = 'source-over'
         ctx.lineCap = 'round'
         for (const p of particles) {
@@ -382,7 +490,6 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           }
           ctx.stroke()
         }
-        // Foam dots — bright small particles drifting along, additive
         ctx.globalCompositeOperation = 'lighter'
         for (const p of particles) {
           if (p.r > 12) continue
@@ -391,8 +498,28 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
           ctx.beginPath()
           ctx.arc(p.x, p.y, p.r * (0.9 + amp * 0.4), 0, Math.PI * 2)
           ctx.fill()
-          // Soft halo around larger foam
           if (p.r > 1.6) blob(p.x, p.y, p.r * 6, p.a * 0.18)
+        }
+      } else if (activeConcept === 'waterfall') {
+        // Falling water columns (vy > 0 = streaks) then rising mist (vy < 0).
+        ctx.lineCap = 'round'
+        ctx.lineWidth = 1.3
+        ctx.strokeStyle = `rgb(${tr},${tg},${tb})`
+        for (const p of particles) {
+          if (p.vy < 0) continue // mist drawn next
+          const len = p.r * (0.9 + amp * 0.5)
+          const inv = len / p.vy
+          ctx.globalAlpha = p.a * (0.75 + amp * 0.5)
+          ctx.beginPath()
+          ctx.moveTo(p.x, p.y)
+          ctx.lineTo(p.x - p.vx * inv, p.y - len)
+          ctx.stroke()
+        }
+        for (const p of particles) {
+          if (p.vy >= 0) continue
+          // mist fades the higher it rises above the base
+          const fade = Math.max(0, Math.min(1, (H - p.y) / (H * 0.36)))
+          blob(p.x, p.y, p.r * (1 + amp * 0.3), p.a * fade * (0.6 + amp * 0.4))
         }
       } else {
         // motes + dust share the soft-blob draw
@@ -437,14 +564,26 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             break
           }
           case 'waves':
+          case 'waves-legacy':
             if (p.r > 12) {
-              // Wave-line — advance phase, slow vertical drift
+              // Swell / wave-line — advance phase, slow vertical drift
               p.x += p.vx * sp
               p.y += p.vy * 0.3
             } else {
               // Foam particle — drift right with the current + gentle vertical bob
               p.x += p.vx * sp
               p.y += Math.sin(t * 0.04 + p.ph) * 0.3
+            }
+            break
+          case 'waterfall':
+            if (p.vy > 0) {
+              // falling water column
+              p.x += p.vx * sp
+              p.y += p.vy * sp
+            } else {
+              // rising mist — drift up + gentle horizontal wander
+              p.x += Math.sin(t * 0.02 + p.ph) * 0.3
+              p.y += p.vy * sp
             }
             break
           default:
@@ -459,9 +598,9 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
             p.y = -10 - Math.random() * 80
           }
           // regular stars don't need wrapping — they're stationary
-        } else if (activeConcept === 'waves') {
+        } else if (activeConcept === 'waves' || activeConcept === 'waves-legacy') {
           if (p.r > 12) {
-            // Wave lines wrap vertically
+            // Swell / wave lines wrap vertically
             if (p.y < -p.r * 2) p.y = H + p.r
             else if (p.y > H + p.r * 2) p.y = -p.r
           } else {
@@ -471,6 +610,16 @@ export default function GenerativeField({ tint = '#BEB0FF', density = 96, concep
               p.y = H * (0.2 + Math.random() * 0.75)
             }
           }
+        } else if (activeConcept === 'waterfall') {
+          if (p.vy > 0) {
+            // streak fell past the bottom — respawn above
+            if (p.y - p.r > H) { p.y = -p.r - Math.random() * 40; p.x = Math.random() * W }
+          } else {
+            // mist rose past mid-screen — respawn at the base
+            if (p.y < H * 0.5) { p.y = H * (0.75 + Math.random() * 0.25); p.x = Math.random() * W }
+          }
+          if (p.x < -40) p.x = W + 40
+          else if (p.x > W + 40) p.x = -40
         } else if (activeConcept === 'constellation' || activeConcept === 'fireflies' || activeConcept === 'fairies') {
           // wrap on all edges (free wander)
           if (p.x < -40) p.x = W + 40

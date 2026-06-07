@@ -16,8 +16,10 @@ import { createContext, useContext, useState, useCallback, useEffect, type React
 export const FIELD_CONCEPTS = [
   'motes', 'dust', 'starfield', 'constellation',
   'embers', 'fireflies', 'bubbles', 'fairies', 'rain',
-  'cosmic',   // deep void starfield + shooting stars (Deep Drift)
-  'waves',    // rolling ocean sine waves (Slow Tide)
+  'cosmic',         // deep void starfield + shooting stars (Deep Drift)
+  'waves',          // layered ocean swells + drifting foam (Slow Tide)
+  'waves-legacy',   // banked: the original thin-line wave field (kept switchable)
+  'waterfall',      // dense vertical cascade + rising mist (Waterfall)
 ] as const
 export type FieldConcept = (typeof FIELD_CONCEPTS)[number]
 
