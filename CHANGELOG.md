@@ -4,6 +4,20 @@ Versioned from **v1.0** (the first real, built release). Earlier work was tracke
 as passes A–G in `PUNCHLIST.md`; the Figma-only concept from ~2021 is prehistory.
 Keep this updated each release.
 
+## v1.2 — 2026-06-03
+### Player
+- Re-laid-out: soundscape title pinned top, mixer pinned bottom, and the hero
+  (orb + transport) is one group that **expands to fill** the space between —
+  much more breathing room, no dead whitespace.
+- Mixer is **click-to-minimize** now (default normal; collapses to its header for
+  max hero space). Removed the fuzzy orb grain; kept the soundscape-tinted pulses.
+- Sleep timer **glows in the soundscape colour** and can be turned **Off**.
+### Meditation
+- Chapter label no longer overlaps the orb; progress bar is visible and
+  **tap-to-scrub**; **rewind / fast-forward 15s**; added a calming ambient glow.
+### Copy
+- Tonight streak line de-corny'd; onboarding "build" → "choose your first soundscape".
+
 ## v1.1 — 2026-06-03
 ### Audio
 - Faders work properly 0–100% now: per-layer loudness **ceilings** (wind can never
