@@ -163,9 +163,9 @@ function Hypnogram({ seed }: { seed: number }) {
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} aria-hidden style={{ display: 'block', overflow: 'visible' }}>
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="var(--color-accent-bright)" stopOpacity="0.52" />
-          <stop offset="55%"  stopColor="var(--color-accent)"        stopOpacity="0.18" />
-          <stop offset="100%" stopColor="var(--color-accent)"        stopOpacity="0.02" />
+          <stop offset="0%"   stopColor="rgba(155,130,230,1)"  stopOpacity="0.42" />
+          <stop offset="55%"  stopColor="rgba(120,95,200,1)"   stopOpacity="0.14" />
+          <stop offset="100%" stopColor="rgba(90,60,170,1)"    stopOpacity="0.02" />
         </linearGradient>
       </defs>
       {[0, 1, 2, 3].map(l => (
@@ -178,7 +178,7 @@ function Hypnogram({ seed }: { seed: number }) {
         stroke="var(--color-accent-bright)"
         strokeWidth={2}
         strokeLinejoin="round"
-        style={{ filter: 'drop-shadow(0 0 2px var(--color-accent-bright)) drop-shadow(0 0 10px rgba(181,168,232,0.55))' }}
+        style={{ filter: 'drop-shadow(0 0 3px rgba(155,130,230,0.9)) drop-shadow(0 0 10px rgba(110,80,200,0.45))' }}
       />
     </svg>
   )
